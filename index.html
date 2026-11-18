@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sessão de 10 minutos · Estudo de lei</title>
+<style>
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+:root {
+  color-scheme: light dark;
+  --fundo: #f5f4ef; --cartao: #ffffff; --superficie: #efeee8;
+  --texto: #1f1e1c; --texto-2: #5f5e5a; --texto-3: #6f6d66;
+  --borda: rgba(31, 30, 28, 0.14); --borda-forte: rgba(31, 30, 28, 0.28);
+  --acento: #185fa5; --acento-fundo: #e6f1fb; --acento-texto: #0c447c;
+  --perigo: #e24b4a;
+  --ok-fundo: #eaf3de; --ok-borda: #97c459; --ok-texto: #27500a;
+  --erro-fundo: #fcebeb; --erro-borda: #f09595; --erro-texto: #791f1f;
+  --aviso-fundo: #faeeda; --aviso-borda: #ef9f27; --aviso-texto: #633806;
+  --raio: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fundo: #1b1b19; --cartao: #262624; --superficie: #30302d;
+    --texto: #f1efe8; --texto-2: #b4b2a9; --texto-3: #9a988f;
+    --borda: rgba(255, 255, 255, 0.14); --borda-forte: rgba(255, 255, 255, 0.28);
+    --acento: #85b7eb; --acento-fundo: #042c53; --acento-texto: #b5d4f4;
+    --ok-fundo: #173404; --ok-borda: #3b6d11; --ok-texto: #c0dd97;
+    --erro-fundo: #501313; --erro-borda: #a32d2d; --erro-texto: #f7c1c1;
+    --aviso-fundo: #412402; --aviso-borda: #854f0b; --aviso-texto: #fac775;
+  }
+}
+
+body { margin: 0; background: var(--fundo); color: var(--texto); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+button { font: inherit; }
+button:focus-visible, summary:focus-visible, #palco:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+#palco:focus { outline: none; }
+mark { background: var(--aviso-fundo); color: var(--aviso-texto); padding: 0 3px; border-radius: 4px; }
+
+.tela { max-width: 440px; margin: 0 auto; padding: 16px 16px 32px; }
+.ic { width: 1.2em; height: 1.2em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.topo { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.icone { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--texto-2); cursor: pointer; font-size: 18px; }
+.etapas { flex: 1; display: flex; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.etapas li { flex: 1; height: 8px; border-radius: 4px; background: var(--borda-forte); transition: background 0.3s; }
+.etapas li.feita { background: var(--acento); }
+.etapas li.atual { background: var(--acento); opacity: 0.5; }
+.vidas { display: flex; gap: 2px; font-size: 17px; }
+.coracao.viva { color: var(--perigo); fill: var(--perigo); }
+.coracao.perdida { color: var(--texto-3); }
+
+.meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 13px; color: var(--texto-2); }
+.meta h1 { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 14px; font-weight: 500; color: inherit; }
+.meta h1 .ic { font-size: 16px; }
+
+.cartao { background: var(--cartao); border: 1px solid var(--borda); border-radius: 14px; padding: 16px 18px; }
+.cartao h2 { margin: 0 0 6px; font-size: 18px; font-weight: 500; }
+.cartao h2:focus { outline: none; }
+.ref { margin: 0 0 6px; font-size: 12px; color: var(--texto-3); }
+.texto { margin: 0; font-size: 18px; line-height: 1.6; }
+.suave { margin: 0; font-size: 14px; color: var(--texto-2); }
+.chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 999px; background: var(--superficie); color: var(--texto-2); font-size: 12px; }
+.chip.acento { background: var(--acento-fundo); color: var(--acento-texto); }
+
+.feedback { min-height: 96px; margin: 12px 0; }
+.caixa { padding: 10px 12px; border: 1px solid transparent; border-radius: var(--raio); font-size: 14px; animation: surgir 0.2s ease-out; }
+.caixa p { margin: 0; }
+.caixa .caixa-titulo { font-weight: 500; margin-bottom: 2px; }
+.caixa.instrucao { padding: 0; border: 0; animation: none; color: var(--texto-2); }
+.caixa.dica { background: var(--superficie); border-color: var(--borda); }
+.caixa.ok { background: var(--ok-fundo); border-color: var(--ok-borda); color: var(--ok-texto); }
+.caixa.erro { background: var(--erro-fundo); border-color: var(--erro-borda); color: var(--erro-texto); }
+
+.acoes { display: flex; gap: 8px; margin-top: 4px; }
+.botao { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 16px; font-weight: 500; color: var(--texto); background: transparent; border: 1px solid var(--borda-forte); border-radius: var(--raio); cursor: pointer; }
+.botao:active { transform: scale(0.98); }
+.botao.primario { background: var(--texto); color: var(--cartao); border-color: var(--texto); }
+.botao:disabled { color: var(--texto-3); border-color: var(--borda); background: var(--superficie); cursor: default; transform: none; }
+@media (hover: hover) {
+  .botao:not(:disabled):hover { background: var(--superficie); }
+  .botao.primario:not(:disabled):hover { background: var(--texto-2); border-color: var(--texto-2); }
+}
+
+.numeros { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 14px 0; }
+.numero { background: var(--superficie); border-radius: var(--raio); padding: 12px; }
+.numero .rotulo { display: block; font-size: 13px; color: var(--texto-2); }
+.numero .valor { font-size: 24px; font-weight: 500; }
+.lista { list-style: none; margin: 0; padding: 0; }
+.lista li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 0; border-top: 1px solid var(--borda); font-size: 14px; }
+.status { padding: 2px 10px; border-radius: 999px; font-size: 12px; white-space: nowrap; }
+.status.bom { background: var(--ok-fundo); color: var(--ok-texto); }
+.status.meio { background: var(--aviso-fundo); color: var(--aviso-texto); }
+.status.ruim { background: var(--erro-fundo); color: var(--erro-texto); }
+.pontos { margin: 8px 0 0; padding-left: 20px; font-size: 15px; }
+.pontos li { margin: 6px 0; }
+
+.interludio { text-align: center; }
+.selo { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto 10px; border-radius: 50%; background: var(--ok-fundo); color: var(--ok-texto); font-size: 24px; }
+.proxima { display: flex; align-items: center; gap: 10px; margin: 14px 0 0; padding: 10px 12px; border: 1px solid var(--borda); border-radius: var(--raio); text-align: left; font-size: 14px; }
+.proxima .ic { font-size: 20px; color: var(--acento); }
+.proxima strong { display: block; font-weight: 500; }
+.proxima span { color: var(--texto-2); }
+
+@keyframes tremer { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+@keyframes surgir { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+.pips { display: inline-flex; gap: 4px; vertical-align: middle; }
+.pip { width: 14px; height: 6px; border-radius: 3px; background: var(--borda-forte); }
+.pip.on { background: var(--acento); }
+.card-topo { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12px; color: var(--texto-3); }
+.card-verso { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--borda-forte); animation: surgir 0.2s ease-out; }
+.card-verso .macete { margin-top: 10px; }
+
+.pontinhos { display: flex; justify-content: center; gap: 6px; margin: 12px 0; }
+.pontinho { width: 8px; height: 8px; border-radius: 50%; background: var(--borda-forte); }
+.pontinho.on { background: var(--acento); }
+.termos { margin: 8px 0 0; padding: 0; list-style: none; }
+.termos li { padding: 10px 0; border-top: 1px solid var(--borda); font-size: 15px; }
+.termos li:first-child { border-top: 0; }
+.termos strong { display: block; font-weight: 500; }
+.termos span { color: var(--texto-2); font-size: 14px; }
+
+.palavra { font: inherit; color: inherit; background: none; border: 0; margin: 0; padding: 0 4px; line-height: 32px; border-radius: 6px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+@media (hover: hover) { .palavra:hover { background: var(--superficie); } }
+.palavra.errada { background: var(--erro-fundo); color: var(--erro-texto); animation: tremer 0.25s; }
+.palavra.certa { background: var(--ok-fundo); color: var(--ok-texto); }
+.texto.trancada { pointer-events: none; }
+
+.tempo { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 14px; font-variant-numeric: tabular-nums; }
+.tempo .trilho { flex: 1; height: 8px; border-radius: 4px; background: var(--borda-forte); overflow: hidden; }
+.tempo .trilho > div { height: 100%; width: 100%; background: var(--acento); transition: width 0.25s linear; }
+.tempo.urgente .trilho > div { background: var(--perigo); }
+.combo { display: flex; justify-content: space-between; font-size: 13px; color: var(--texto-2); margin-bottom: 8px; }
+.combo b { font-weight: 500; color: var(--acento); }
+.afirmacao { min-height: 120px; }
+.respostas .botao { min-height: 52px; font-size: 17px; }
+.respostas .botao.certo { background: var(--ok-fundo); border-color: var(--ok-borda); color: var(--ok-texto); }
+.respostas .botao.errado { background: var(--erro-fundo); border-color: var(--erro-borda); color: var(--erro-texto); }
+
+.chefe { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 14px; }
+.chefe .ic { font-size: 22px; color: var(--perigo); }
+.chefe .vida { flex: 1; height: 10px; border-radius: 5px; background: var(--borda-forte); overflow: hidden; }
+.chefe .vida > div { height: 100%; background: var(--perigo); transition: width 0.4s ease; }
+.cena { margin: 0 0 10px; padding: 10px 12px; border-radius: var(--raio); background: var(--superficie); font-size: 15px; }
+.enunciado { margin: 0 0 12px; font-size: 17px; font-weight: 500; line-height: 1.45; }
+.alternativas { display: grid; gap: 8px; }
+.alt { display: flex; gap: 10px; align-items: flex-start; width: 100%; padding: 12px; text-align: left; font-size: 15px; line-height: 1.4; color: var(--texto); background: var(--cartao); border: 1px solid var(--borda-forte); border-radius: var(--raio); cursor: pointer; }
+.alt b { flex: none; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: var(--superficie); font-size: 12px; font-weight: 500; }
+@media (hover: hover) { .alt:not(:disabled):hover { background: var(--superficie); } }
+.alt:disabled { cursor: default; }
+.alt.errada { background: var(--erro-fundo); border-color: var(--erro-borda); color: var(--erro-texto); animation: tremer 0.25s; }
+.alt.certa { background: var(--ok-fundo); border-color: var(--ok-borda); color: var(--ok-texto); }
+
+.carta { margin: 14px 0; padding: 16px; border: 2px solid var(--acento); border-radius: 14px; background: var(--acento-fundo); color: var(--acento-texto); text-align: center; }
+.carta .ic { font-size: 28px; }
+.carta strong { display: block; margin-top: 4px; font-size: 17px; font-weight: 500; }
+.carta span { font-size: 13px; }
+.carta.epica { border-color: var(--aviso-borda); background: var(--aviso-fundo); color: var(--aviso-texto); }
+.secao { margin-top: 16px; }
+.secao h3 { margin: 0 0 6px; font-size: 14px; font-weight: 500; color: var(--texto-2); }
+.erros details { border-top: 1px solid var(--borda); padding: 8px 0; font-size: 14px; }
+.erros summary { cursor: pointer; }
+.erros .resp { margin: 6px 0 0; color: var(--texto-2); }
+.barra-prova { height: 8px; margin: 8px 0; border-radius: 4px; background: var(--borda-forte); overflow: hidden; }
+.barra-prova > div { height: 100%; background: var(--acento); }
+</style>
+</head>
+<body>
+<main class="tela">
+  <header class="topo">
+    <button type="button" class="icone" id="btn-sair" aria-label="Sair da sessão"></button>
+    <ol class="etapas" id="etapas" aria-label="Etapas da sessão"></ol>
+    <div class="vidas" id="vidas" role="img" aria-label="Vidas" hidden></div>
+  </header>
+  <div class="meta">
+    <h1 id="titulo"></h1>
+    <span id="placar"></span>
+  </div>
+  <section id="palco" tabindex="-1" aria-label="Etapa atual"></section>
+</main>
+
+<!--
+  CONTEÚDO (JSON estático, um bloco por etapa). Edite apenas estes blocos para trocar a lei e as questões.
+  Ids: json-aquecimento, json-artigo, json-pegadinha, json-relampago, json-chefao, json-fechamento.
+-->
+<script id="json-aquecimento" type="application/json">
+{
+  "meta": { "titulo": "Aquecimento", "duracao": "1:30", "instrucao": "Revise os erros de ontem." },
+  "sequenciaAnterior": 6,
+  "xpPorLembrar": 10,
+  "cards": [
+    {
+      "id": "cf37-limpe",
+      "artigo": "Constituição Federal · art. 37, caput",
+      "nivel": 2,
+      "frente": "Quais princípios a Administração Pública direta e indireta deve obedecer, segundo o caput do art. 37?",
+      "verso": "Legalidade, impessoalidade, moralidade, publicidade e eficiência.",
+      "macete": "LIMPE: Legalidade, Impessoalidade, Moralidade, Publicidade, Eficiência."
+    },
+    {
+      "id": "cf37-validade",
+      "artigo": "Constituição Federal · art. 37, III",
+      "nivel": 1,
+      "frente": "Qual é o prazo de validade do concurso público?",
+      "verso": "Até dois anos, prorrogável uma vez, por igual período.",
+      "macete": "Dois mais dois: no máximo quatro anos no total."
+    },
+    {
+      "id": "cf37-confianca",
+      "artigo": "Constituição Federal · art. 37, V",
+      "nivel": 3,
+      "frente": "Quem pode exercer as funções de confiança?",
+      "verso": "Exclusivamente servidores ocupantes de cargo efetivo.",
+      "macete": "Função de confiança: só quem já é efetivo. Cargo em comissão tem regra própria."
+    }
+  ]
+}
+</script>
+
+<script id="json-artigo" type="application/json">
+{
+  "meta": { "titulo": "Artigo do dia", "duracao": "2:00", "instrucao": "Leia o artigo em quatro cards." },
+  "xpPorLer": 10,
+  "lei": "Constituição Federal",
+  "artigo": "art. 41, caput",
+  "cards": [
+    {
+      "tipo": "Texto da lei",
+      "corpo": "São estáveis após {{três anos}} de {{efetivo exercício}} os servidores nomeados para cargo de {{provimento efetivo}} em virtude de {{concurso público}}."
+    },
+    {
+      "tipo": "Em linguagem simples",
+      "corpo": "Quem passa em concurso e é nomeado para um cargo efetivo só se torna estável depois de três anos trabalhando de verdade no cargo. Antes disso, ainda não tem estabilidade."
+    },
+    {
+      "tipo": "No dia a dia",
+      "corpo": "Marina foi nomeada analista em março de 2021, após concurso. Em março de 2024 ela completa três anos de exercício, e a estabilidade passa a depender também da avaliação especial de desempenho. Já o chefe de gabinete, nomeado em comissão, não adquire estabilidade por mais tempo que fique no posto."
+    },
+    {
+      "tipo": "Palavras-chave",
+      "itens": [
+        { "termo": "três anos", "nota": "Até a EC 19/1998 eram dois. É o número que as bancas mais trocam." },
+        { "termo": "efetivo exercício", "nota": "Conta o tempo em que a pessoa realmente exerceu o cargo." },
+        { "termo": "provimento efetivo", "nota": "Cargo comissionado não gera estabilidade." },
+        { "termo": "concurso público", "nota": "É a porta de entrada exigida pelo texto." }
+      ]
+    }
+  ]
+}
+</script>
+
+<script id="json-pegadinha" type="application/json">
+{
+  "meta": { "titulo": "Caça à pegadinha", "duracao": "2:00", "instrucao": "Toque na palavra trocada." },
+  "vidas": 3,
+  "xpPorAcerto": 10,
+  "revisaoSegundos": 30,
+  "revisao": {
+    "titulo": "Os truques mais comuns da banca",
+    "pontos": [
+      "Prazos e números: {{três anos}} vira dois anos, cinco anos...",
+      "Conceitos vizinhos: cargo {{efetivo}} no lugar de comissionado.",
+      "Institutos parecidos: {{estabilidade}} no lugar de vitaliciedade."
+    ]
+  },
+  "questoes": [
+    {
+      "id": "cf88-art41-01",
+      "lei": "Constituição Federal",
+      "artigo": "art. 41, caput",
+      "texto": "São estáveis após dois anos de efetivo exercício os servidores nomeados para cargo de provimento efetivo em virtude de concurso público.",
+      "palavraTrocada": "dois",
+      "palavraCerta": "três",
+      "padrao": "Prazo trocado",
+      "explicacao": "Desde a EC 19/1998 o prazo é de três anos. Bancas adoram mexer em números.",
+      "dica": "Olhe os números."
+    },
+    {
+      "id": "cf88-art41-02",
+      "lei": "Constituição Federal",
+      "artigo": "art. 41, caput",
+      "texto": "São estáveis após três anos de efetivo exercício os servidores nomeados para cargo de provimento comissionado em virtude de concurso público.",
+      "palavraTrocada": "comissionado",
+      "palavraCerta": "efetivo",
+      "padrao": "Conceito trocado",
+      "explicacao": "A estabilidade vale para cargo de provimento efetivo. Cargo em comissão é de livre nomeação e exoneração.",
+      "dica": "Olhe o tipo de cargo."
+    },
+    {
+      "id": "cf88-art41-03",
+      "lei": "Constituição Federal",
+      "artigo": "art. 41, caput",
+      "texto": "São vitalícios após três anos de efetivo exercício os servidores nomeados para cargo de provimento efetivo em virtude de concurso público.",
+      "palavraTrocada": "vitalícios",
+      "palavraCerta": "estáveis",
+      "padrao": "Instituto parecido",
+      "explicacao": "Vitaliciedade é de carreiras específicas, como a magistratura. O servidor concursado adquire estabilidade.",
+      "dica": "Olhe o instituto."
+    }
+  ]
+}
+</script>
+
+<script id="json-relampago" type="application/json">
+{
+  "meta": { "titulo": "Relâmpago", "duracao": "1:30", "instrucao": "Certo ou Errado, contra o relógio." },
+  "duracao": 75,
+  "xpPorAcerto": 5,
+  "comboACada": 3,
+  "xpBonusCombo": 5,
+  "pausaAcertoMs": 600,
+  "pausaErroMs": 1800,
+  "embaralhar": true,
+  "afirmacoes": [
+    { "texto": "São estáveis após três anos de efetivo exercício os servidores nomeados para cargo de provimento efetivo em virtude de concurso público.", "certo": true, "artigo": "art. 41, caput", "explicacao": "É o texto do caput." },
+    { "texto": "A estabilidade é adquirida após dois anos de efetivo exercício.", "certo": false, "artigo": "art. 41, caput", "explicacao": "O prazo é de três anos." },
+    { "texto": "Ocupante de cargo em comissão adquire estabilidade após três anos de exercício.", "certo": false, "artigo": "art. 41, caput", "explicacao": "A estabilidade é só para cargo de provimento efetivo." },
+    { "texto": "Como condição para a aquisição da estabilidade, é obrigatória a avaliação especial de desempenho por comissão instituída para essa finalidade.", "certo": true, "artigo": "art. 41, §4º", "explicacao": "É o texto do §4º." },
+    { "texto": "A estabilidade é adquirida automaticamente após três anos, dispensada a avaliação especial de desempenho.", "certo": false, "artigo": "art. 41, §4º", "explicacao": "A avaliação especial é condição obrigatória." },
+    { "texto": "O servidor estável pode perder o cargo mediante processo administrativo em que lhe seja assegurada ampla defesa.", "certo": true, "artigo": "art. 41, §1º, II", "explicacao": "Uma das hipóteses do §1º." },
+    { "texto": "O servidor estável só perde o cargo por sentença judicial transitada em julgado.", "certo": false, "artigo": "art. 41, §1º", "explicacao": "Há outras hipóteses: processo administrativo e avaliação periódica de desempenho." },
+    { "texto": "A avaliação periódica de desempenho, para fins de perda do cargo, é regulamentada por lei complementar.", "certo": true, "artigo": "art. 41, §1º, III", "explicacao": "O inciso III exige lei complementar." },
+    { "texto": "Invalidada por sentença judicial a demissão do servidor estável, ele será reintegrado.", "certo": true, "artigo": "art. 41, §2º", "explicacao": "É a regra do §2º." },
+    { "texto": "Reintegrado o servidor estável, o eventual ocupante da vaga, se estável, deve ser indenizado.", "certo": false, "artigo": "art. 41, §2º", "explicacao": "O ocupante é reconduzido ao cargo de origem, sem direito a indenização." },
+    { "texto": "Extinto o cargo, o servidor estável ficará em disponibilidade, com remuneração proporcional ao tempo de serviço, até seu adequado aproveitamento em outro cargo.", "certo": true, "artigo": "art. 41, §3º", "explicacao": "É o texto do §3º." },
+    { "texto": "Extinto o cargo, o servidor estável é automaticamente exonerado.", "certo": false, "artigo": "art. 41, §3º", "explicacao": "Ele fica em disponibilidade, não é exonerado." }
+  ]
+}
+</script>
+
+<script id="json-chefao" type="application/json">
+{
+  "meta": { "titulo": "Chefão", "duracao": "2:00", "instrucao": "Aplique o artigo em um caso prático." },
+  "vidas": 3,
+  "xpPorAcerto": 20,
+  "xpBonusVitoria": 15,
+  "revisaoSegundos": 30,
+  "chefe": "O Chefão da Estabilidade",
+  "caso": "Marina foi nomeada em 1º de março de 2021 para o cargo de provimento efetivo de analista, após aprovação em concurso público. Acompanhe o que aconteceu com ela.",
+  "revisao": {
+    "titulo": "Revisão do art. 41",
+    "pontos": [
+      "{{Três anos}} de efetivo exercício, em cargo de {{provimento efetivo}}, por concurso público.",
+      "A {{avaliação especial de desempenho}} é condição obrigatória (§4º).",
+      "Perda do cargo (§1º): sentença transitada em julgado, {{processo administrativo}} com ampla defesa ou avaliação periódica por lei complementar.",
+      "Cargo extinto (§3º): {{disponibilidade}} com remuneração proporcional, até o aproveitamento."
+    ]
+  },
+  "perguntas": [
+    {
+      "id": "chefao-1",
+      "fundamento": "art. 41, caput e §4º",
+      "contexto": "Em março de 2024, Marina completou três anos de efetivo exercício. A comissão de avaliação especial de desempenho ainda não se manifestou.",
+      "enunciado": "Marina já adquiriu a estabilidade?",
+      "alternativas": [
+        { "id": "a", "texto": "Sim, a estabilidade é automática após três anos.", "porque": "Além dos três anos, o §4º exige a avaliação especial de desempenho." },
+        { "id": "b", "texto": "Não, porque a avaliação especial de desempenho é condição obrigatória.", "correta": true },
+        { "id": "c", "texto": "Sim, mas só passa a valer quando o chefe confirmar.", "porque": "A Constituição não prevê confirmação pelo chefe." },
+        { "id": "d", "texto": "Não, porque a estabilidade só vem após cinco anos.", "porque": "O prazo do caput é de três anos." }
+      ],
+      "explicacao": "A estabilidade exige três anos de efetivo exercício e a avaliação especial de desempenho (§4º)."
+    },
+    {
+      "id": "chefao-2",
+      "fundamento": "art. 41, §1º e §2º",
+      "contexto": "Marina foi aprovada na avaliação e se tornou estável. Tempos depois, o chefe a demitiu sem processo algum, e uma sentença judicial invalidou a demissão.",
+      "enunciado": "O que acontece com Marina e com quem ocupava a vaga dela?",
+      "alternativas": [
+        { "id": "a", "texto": "Marina é reintegrada, e o ocupante estável é reconduzido ao cargo de origem, sem indenização.", "correta": true },
+        { "id": "b", "texto": "Marina é reintegrada, e o ocupante estável deve ser indenizado.", "porque": "O §2º diz expressamente que não há direito a indenização." },
+        { "id": "c", "texto": "Marina recebe indenização e não volta ao cargo.", "porque": "Invalidada a demissão, a regra é a reintegração." },
+        { "id": "d", "texto": "Marina volta apenas se o chefe concordar.", "porque": "A reintegração decorre da sentença, não da vontade do chefe." }
+      ],
+      "explicacao": "Invalidada a demissão por sentença, o servidor estável é reintegrado (§2º). O ocupante, se estável, volta ao cargo de origem sem indenização, ou é aproveitado em outro cargo ou posto em disponibilidade."
+    },
+    {
+      "id": "chefao-3",
+      "fundamento": "art. 41, §3º",
+      "contexto": "Anos depois, o órgão foi reestruturado e o cargo de Marina foi extinto.",
+      "enunciado": "Qual é a situação de Marina, que é servidora estável?",
+      "alternativas": [
+        { "id": "a", "texto": "É exonerada imediatamente, sem direito a nada.", "porque": "A estabilidade impede a exoneração automática." },
+        { "id": "b", "texto": "Fica em disponibilidade com remuneração integral, por prazo indeterminado.", "porque": "A remuneração é proporcional ao tempo de serviço, não integral." },
+        { "id": "c", "texto": "Fica em disponibilidade com remuneração proporcional ao tempo de serviço, até ser aproveitada em outro cargo.", "correta": true },
+        { "id": "d", "texto": "É aproveitada de imediato em cargo de mesma remuneração.", "porque": "O aproveitamento vem depois, e não é automático nem imediato." }
+      ],
+      "explicacao": "Extinto o cargo, o estável fica em disponibilidade com remuneração proporcional ao tempo de serviço, até seu adequado aproveitamento (§3º)."
+    }
+  ]
+}
+</script>
+
+<script id="json-fechamento" type="application/json">
+{
+  "meta": { "titulo": "Fechamento", "duracao": "1:00", "instrucao": "XP, carta, erros e prévia de amanhã." },
+  "carta": {
+    "titulo": "Estabilidade do servidor",
+    "artigo": "CF/88, art. 41",
+    "niveis": [
+      { "min": 0.9, "nome": "Épica", "estilo": "epica" },
+      { "min": 0.75, "nome": "Rara", "estilo": "" },
+      { "min": 0.6, "nome": "Comum", "estilo": "" }
+    ]
+  },
+  "amanha": {
+    "artigo": "CF/88, art. 41, §1º",
+    "titulo": "Perda do cargo do servidor estável",
+    "reforco": "Cards dos erros de hoje entram na revisão."
+  },
+  "prova": {
+    "dataProva": "2027-03-14",
+    "artigosNoEdital": 120,
+    "artigosDominados": 37
+  }
+}
+</script>
+
+<script>
+(() => {
+  'use strict';
+
+  const $ = (id) => document.getElementById(id);
+  const el = { etapas: $('etapas'), vidas: $('vidas'), titulo: $('titulo'), placar: $('placar'), palco: $('palco'), sair: $('btn-sair') };
+  const ETAPAS = [];
+  let sessao, ctxAtual, subtitulo = '', xpInicio = 0;
+
+  // ---------- ícones (traços 24x24) ----------
+  const ICONES = {
+    x: ['M18 6 6 18M6 6l12 12'],
+    check: ['M20 6 9 17l-5-5'],
+    heart: ['M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'],
+    search: ['M11 3a8 8 0 1 0 0 16 8 8 0 0 0 0-16z', 'M21 21l-4.3-4.3'],
+    bulb: ['M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5', 'M9 18h6', 'M10 22h4'],
+    flame: ['M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z'],
+    zap: ['M13 2 3 14h9l-1 8 10-12h-9z'],
+    book: ['M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z', 'M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z'],
+    crown: ['M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z', 'M5 20h14'],
+    trophy: ['M6 9H4.5a2.5 2.5 0 0 1 0-5H6', 'M18 9h1.5a2.5 2.5 0 0 0 0-5H18', 'M4 22h16', 'M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22', 'M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22', 'M18 2H6v7a6 6 0 0 0 12 0V2z'],
+    refresh: ['M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8', 'M3 3v5h5'],
+    calendar: ['M8 2v4M16 2v4', 'M3 10h18', 'M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z'],
+    arrow: ['M5 12h14M12 5l7 7-7 7'],
+    voltar: ['M19 12H5M12 19l-7-7 7-7'],
+    clock: ['M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z', 'M12 6v6l4 2'],
+    star: ['M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z'],
+    file: ['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z', 'M14 2v6h6', 'M16 13H8M16 17H8M10 9H8'],
+    eye: ['M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z', 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z']
+  };
+  const NS = 'http://www.w3.org/2000/svg';
+  function icone(nome, classe = '') {
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('class', `ic ${classe}`.trim());
+    (ICONES[nome] || []).forEach((d) => {
+      const p = document.createElementNS(NS, 'path');
+      p.setAttribute('d', d);
+      svg.append(p);
+    });
+    return svg;
+  }
+
+  // ---------- helpers de DOM ----------
+  function h(tag, attrs, ...filhos) {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v == null || v === false) continue;
+      if (k === 'class') n.className = v;
+      else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, v === true ? '' : v);
+    }
+    n.append(...filhos.flat(Infinity).filter((f) => f != null && f !== false));
+    return n;
+  }
+  // "{{palavra}}" vira <mark>palavra</mark>
+  const comDestaques = (texto) => String(texto).split(/\{\{(.+?)\}\}/g).map((p, i) => (i % 2 ? h('mark', null, p) : p));
+  const lerJSON = (id) => {
+    try { return JSON.parse($(id).textContent); } catch (erro) { console.error(`JSON inválido em #${id}`, erro); return null; }
+  };
+  const embaralhar = (lista) => {
+    const c = [...lista];
+    for (let i = c.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [c[i], c[j]] = [c[j], c[i]]; }
+    return c;
+  };
+  const caixa = (tipo, titulo, corpo) => h('div', { class: `caixa ${tipo}` }, titulo && h('p', { class: 'caixa-titulo' }, titulo), h('p', null, corpo));
+
+  // ---------- cabeçalho ----------
+  function desenharPlacar() { el.placar.textContent = `${subtitulo ? `${subtitulo} · ` : ''}${sessao.xp} XP`; }
+  function marcarEtapas(concluida = false) {
+    el.etapas.replaceChildren(...ETAPAS.map((e, i) => {
+      const feita = i < sessao.indice || (i === sessao.indice && concluida);
+      const atual = i === sessao.indice && !concluida;
+      return h('li', { class: feita ? 'feita' : atual ? 'atual' : '', 'aria-current': atual ? 'step' : null, 'aria-label': `${e.titulo}${feita ? ' (concluída)' : ''}`, title: e.titulo });
+    }));
+  }
+
+  // ---------- revisão rápida: devolve 1 vida depois de N segundos ----------
+  function revisaoRapida(ctx, { titulo = 'Revisão rápida', pontos = [], segundos = 30 } = {}) {
+    return new Promise((resolve) => {
+      const guardado = [...el.palco.childNodes];
+      let resta = Math.max(0, Number(segundos) || 0);
+      const voltar = h('button', { type: 'button', class: 'botao primario', onclick: () => { el.palco.replaceChildren(...guardado); resolve(); } });
+      const atualizar = () => {
+        voltar.disabled = resta > 0;
+        voltar.textContent = resta > 0 ? `Voltar ao jogo (${resta} s)` : 'Voltar ao jogo · +1 vida';
+      };
+      el.palco.replaceChildren(
+        h('article', { class: 'cartao' },
+          h('p', { class: 'ref' }, 'Sem vidas'),
+          h('h2', { tabindex: -1, id: 'foco-revisao' }, titulo),
+          h('p', { class: 'suave' }, 'Leia os pontos abaixo. Ao fim do tempo, você recupera uma vida.'),
+          h('ul', { class: 'pontos' }, pontos.map((p) => h('li', null, comDestaques(p))))),
+        h('div', { class: 'acoes', style: 'margin-top:12px' }, voltar)
+      );
+      atualizar();
+      $('foco-revisao').focus({ preventScroll: true });
+      if (resta > 0) {
+        const id = ctx.intervalo(() => { resta -= 1; atualizar(); if (resta <= 0) ctx.cancelar(id); }, 1000);
+      }
+    });
+  }
+
+  // ---------- contexto entregue a cada etapa ----------
+  function criarCtx(etapa, dados) {
+    const timers = new Set();
+    const ctx = {
+      dados, sessao, h, icone, caixa, comDestaques, embaralhar, palco: el.palco,
+      ganharXP(n) { sessao.xp += n; desenharPlacar(); },
+      sub(texto) { subtitulo = texto; desenharPlacar(); },
+      vidas(atual, max) {
+        el.vidas.hidden = atual == null;
+        if (atual == null) return;
+        el.vidas.replaceChildren(...Array.from({ length: max }, (_, i) => icone('heart', `coracao ${i < atual ? 'viva' : 'perdida'}`)));
+        el.vidas.setAttribute('aria-label', `${atual} de ${max} vidas`);
+      },
+      erro(item) { sessao.erros.push({ etapa: etapa.titulo, ...item }); },
+      pratica(acertos, total) { sessao.pratica.acertos += acertos; sessao.pratica.total += total; },
+      espera(fn, ms) { const id = setTimeout(() => { timers.delete(id); fn(); }, ms); timers.add(id); return id; },
+      intervalo(fn, ms) { const id = setInterval(fn, ms); timers.add(id); return id; },
+      cancelar(id) { clearTimeout(id); clearInterval(id); timers.delete(id); },
+      limpar() { timers.forEach((id) => { clearTimeout(id); clearInterval(id); }); timers.clear(); },
+      revisao: (cfg) => revisaoRapida(ctx, cfg),
+      reiniciar: () => iniciar(),
+      concluir(res = {}) {
+        ctx.limpar();
+        const ganho = sessao.xp - xpInicio;
+        sessao.resultados[etapa.id] = { ...res, xp: ganho };
+        mostrarInterludio(etapa, res, ganho);
+      }
+    };
+    return ctx;
+  }
+
+  // ---------- fluxo da sessão ----------
+  function mostrarInterludio(etapa, res, ganho) {
+    const prox = ETAPAS[sessao.indice + 1];
+    const dadosProx = prox && lerJSON(prox.json);
+    const meta = (dadosProx && dadosProx.meta) || {};
+    el.vidas.hidden = true;
+    marcarEtapas(true);
+    el.palco.replaceChildren(
+      h('article', { class: 'cartao interludio' },
+        h('div', { class: 'selo' }, icone('check')),
+        h('p', { class: 'ref' }, `Etapa ${sessao.indice + 1} de ${ETAPAS.length} concluída`),
+        h('h2', { tabindex: -1, id: 'foco-interludio' }, etapa.titulo),
+        res.resumo && h('p', { class: 'suave' }, res.resumo),
+        h('div', { class: 'numeros' },
+          h('div', { class: 'numero' }, h('span', { class: 'rotulo' }, 'XP da etapa'), h('span', { class: 'valor' }, `+${ganho}`)),
+          h('div', { class: 'numero' }, h('span', { class: 'rotulo' }, 'XP total'), h('span', { class: 'valor' }, sessao.xp))),
+        prox && h('div', { class: 'proxima' }, icone(prox.icone),
+          h('div', null, h('span', null, 'Próxima etapa'), h('strong', null, `${prox.titulo}${meta.duracao ? ` · ${meta.duracao}` : ''}`)))),
+      h('div', { class: 'acoes', style: 'margin-top:12px' },
+        h('button', { type: 'button', class: 'botao primario', onclick: avancar }, 'Continuar', icone('arrow')))
+    );
+    $('foco-interludio').focus({ preventScroll: true });
+    window.scrollTo(0, 0);
+  }
+
+  function avancar() {
+    sessao.indice = Math.min(sessao.indice + 1, ETAPAS.length - 1);
+    abrirEtapa();
+  }
+
+  function abrirEtapa() {
+    if (ctxAtual) ctxAtual.limpar();
+    const etapa = ETAPAS[sessao.indice];
+    const dados = lerJSON(etapa.json);
+    subtitulo = '';
+    xpInicio = sessao.xp;
+    el.vidas.hidden = true;
+    el.palco.replaceChildren();
+    el.titulo.replaceChildren(icone(etapa.icone), etapa.titulo);
+    marcarEtapas();
+    desenharPlacar();
+    ctxAtual = criarCtx(etapa, dados);
+    window.scrollTo(0, 0);
+    if (!dados) {
+      const ultima = sessao.indice === ETAPAS.length - 1;
+      el.palco.replaceChildren(
+        caixa('erro', 'Não foi possível ler os dados da etapa', `Confira o JSON em #${etapa.json}.`),
+        h('div', { class: 'acoes', style: 'margin-top:12px' },
+          h('button', { type: 'button', class: 'botao', onclick: ultima ? iniciar : avancar }, ultima ? 'Recomeçar' : 'Pular etapa')));
+      return;
+    }
+    etapa.iniciar(ctxAtual);
+  }
+
+  function iniciar() {
+    if (ctxAtual) ctxAtual.limpar();
+    sessao = { indice: 0, xp: 0, streak: 0, erros: [], resultados: {}, pratica: { acertos: 0, total: 0 } };
+    abrirEtapa();
+  }
+
+  function sair() {
+    if (!confirm('Sair da sessão? O progresso de hoje será perdido.')) return;
+    document.dispatchEvent(new CustomEvent('jogo:sair'));
+    iniciar();
+  }
+
+  // ---------- as etapas se registram abaixo, na ordem da sessão ----------
+
+  ETAPAS.push({
+    id: 'aquecimento', titulo: 'Aquecimento', icone: 'flame', json: 'json-aquecimento',
+    iniciar(ctx) {
+      const { h, icone, dados } = ctx;
+      const cards = dados.cards || [];
+      const xp = dados.xpPorLembrar ?? 10;
+      let i = 0, lembrados = 0, primeira = true;
+      const pips = (n) => h('span', { class: 'pips', role: 'img', 'aria-label': `Nível ${n} de 5` },
+        Array.from({ length: 5 }, (_, k) => h('span', { class: `pip${k < n ? ' on' : ''}` })));
+
+      function fim() {
+        const dias = sessao.streak;
+        ctx.concluir({ resumo: `${lembrados} de ${cards.length} lembrados · sequência de ${dias} ${dias === 1 ? 'dia' : 'dias'}.` });
+      }
+
+      function mostrar() {
+        const c = cards[i];
+        let nivel = Math.min(5, Math.max(1, c.nivel || 1));
+        ctx.sub(`Card ${i + 1} de ${cards.length}`);
+        const topo = h('div', { class: 'card-topo' }, h('span', null, c.artigo), pips(nivel));
+        const verso = h('div', { class: 'card-verso', hidden: true },
+          h('p', { class: 'texto' }, c.verso),
+          c.macete && h('p', { class: 'caixa dica macete' }, `Macete: ${c.macete}`));
+        const feedback = h('div', { class: 'feedback', role: 'status', style: 'min-height:0' });
+        const acoes = h('div', { class: 'acoes' });
+
+        function avaliar(lembrou) {
+          if (primeira) { sessao.streak = (dados.sequenciaAnterior || 0) + 1; primeira = false; }
+          if (lembrou) {
+            lembrados += 1;
+            ctx.ganharXP(xp);
+            nivel = Math.min(5, nivel + 1);
+            topo.lastChild.replaceWith(pips(nivel));
+            feedback.replaceChildren(caixa('ok', `Lembrou! +${xp} XP`, `O card sobe para o nível ${nivel}.`));
+          } else {
+            ctx.erro({ resumo: c.frente, resposta: c.verso, explicacao: c.macete || '' });
+            feedback.replaceChildren(caixa('erro', 'Sem problema.', 'Esse card volta amanhã para revisão.'));
+          }
+          const ultimo = i === cards.length - 1;
+          acoes.replaceChildren(h('button', { type: 'button', class: 'botao primario', onclick: () => { if (ultimo) fim(); else { i += 1; mostrar(); } } },
+            ultimo ? 'Concluir aquecimento' : 'Próximo card', icone('arrow')));
+          acoes.firstChild.focus({ preventScroll: true });
+        }
+
+        acoes.append(h('button', { type: 'button', class: 'botao primario', onclick: () => {
+          verso.hidden = false;
+          acoes.replaceChildren(
+            h('button', { type: 'button', class: 'botao', onclick: () => avaliar(false) }, 'Esqueci'),
+            h('button', { type: 'button', class: 'botao primario', onclick: () => avaliar(true) }, icone('check'), 'Lembrei'));
+        } }, icone('eye'), 'Mostrar resposta'));
+
+        ctx.palco.replaceChildren(
+          h('article', { class: 'cartao' }, topo, h('p', { class: 'texto' }, c.frente), verso),
+          h('div', { style: 'margin-top:12px' }, feedback, acoes));
+      }
+
+      if (cards.length) mostrar(); else ctx.concluir({ resumo: 'Nenhum card para revisar hoje.' });
+    }
+  });
+
+  ETAPAS.push({
+    id: 'artigo', titulo: 'Artigo do dia', icone: 'book', json: 'json-artigo',
+    iniciar(ctx) {
+      const { h, icone, dados, comDestaques } = ctx;
+      const cards = dados.cards || [];
+      let i = 0;
+
+      function mostrar() {
+        const c = cards[i];
+        const ultimo = i === cards.length - 1;
+        ctx.sub(`Card ${i + 1} de ${cards.length}`);
+        const corpo = c.itens
+          ? h('ul', { class: 'termos' }, c.itens.map((t) => h('li', null, h('strong', null, h('mark', null, t.termo)), h('span', null, t.nota))))
+          : h('p', { class: 'texto' }, comDestaques(c.corpo));
+        ctx.palco.replaceChildren(
+          h('article', { class: 'cartao' },
+            h('p', { class: 'ref' }, `${dados.lei} · ${dados.artigo}`),
+            h('h2', { tabindex: -1, id: 'foco-card' }, c.tipo),
+            corpo),
+          h('div', { class: 'pontinhos', role: 'img', 'aria-label': `Card ${i + 1} de ${cards.length}` },
+            cards.map((_, k) => h('span', { class: `pontinho${k === i ? ' on' : ''}` }))),
+          h('div', { class: 'acoes' },
+            i > 0 && h('button', { type: 'button', class: 'botao', onclick: () => { i -= 1; mostrar(); } }, icone('voltar'), 'Voltar'),
+            h('button', { type: 'button', class: 'botao primario', onclick: () => {
+              if (!ultimo) { i += 1; mostrar(); return; }
+              ctx.ganharXP(dados.xpPorLer ?? 10);
+              ctx.concluir({ resumo: `${dados.artigo} lido. Agora vem a caça às pegadinhas.` });
+            } }, ultimo ? 'Entendi, bora praticar' : 'Continuar', icone('arrow'))));
+        $('foco-card').focus({ preventScroll: true });
+      }
+
+      if (cards.length) mostrar(); else ctx.concluir({ resumo: 'Sem conteúdo para hoje.' });
+    }
+  });
+
+  ETAPAS.push({
+    id: 'pegadinha', titulo: 'Caça à pegadinha', icone: 'search', json: 'json-pegadinha',
+    iniciar(ctx) {
+      const { h, icone, caixa, dados } = ctx;
+      const MAX = dados.vidas ?? 3;
+      const xp = dados.xpPorAcerto ?? 10;
+      const partes = (t) => t.match(/^([^\p{L}\p{N}]*)(.*?)([^\p{L}\p{N}]*)$/u);
+      const minus = (t) => t.toLocaleLowerCase('pt-BR');
+      const tokens = (t) => t.trim().split(/\s+/);
+      const indiceErro = (q) => {
+        const alvo = minus(partes(q.palavraTrocada)[2]);
+        let vistas = 0;
+        return tokens(q.texto).findIndex((t) => minus(partes(t)[2]) === alvo && ++vistas === (q.ocorrencia || 1));
+      };
+      const fila = (dados.questoes || []).filter((q) => {
+        const ok = q.texto && q.palavraTrocada && q.palavraCerta && indiceErro(q) >= 0;
+        if (!ok) console.warn('Questão ignorada:', q.id);
+        return ok;
+      });
+      if (!fila.length) { ctx.concluir({ resumo: 'Sem questões válidas.' }); return; }
+
+      let i = 0, vidas = MAX, acertosDePrimeira = 0, achadas = 0;
+
+      function mostrar() {
+        const q = fila[i];
+        const alvo = indiceErro(q);
+        let respondida = false, erros = 0, botaoErro = null;
+        ctx.sub(`Rodada ${i + 1} de ${fila.length}`);
+        ctx.vidas(vidas, MAX);
+        const texto = h('p', { class: 'texto' });
+        const feedback = h('div', { class: 'feedback', role: 'status' }, h('div', { class: 'caixa instrucao' }, h('p', null, 'Uma palavra foi trocada. Toque nela.')));
+        const proxima = h('button', { type: 'button', class: 'botao primario', onclick: seguir }, i === fila.length - 1 ? 'Concluir etapa' : 'Próxima');
+        const say = (n) => feedback.replaceChildren(n);
+
+        function marcar(btn) {
+          const [, ini, miolo, fim] = partes(btn.textContent);
+          btn.classList.add('certa');
+          btn.replaceChildren(ini, h('s', null, miolo), ' ', q.palavraCerta, fim);
+        }
+        function encerrar(achou) {
+          respondida = true;
+          if (achou) achadas += 1;
+          if (achou && erros === 0) acertosDePrimeira += 1;
+          if (!achou || erros) ctx.erro({ resumo: `${q.padrao}: “${q.palavraTrocada}” no lugar de “${q.palavraCerta}” (${q.artigo})`, resposta: q.palavraCerta, explicacao: q.explicacao });
+          texto.classList.add('trancada');
+          proxima.focus({ preventScroll: true });
+        }
+        function tocar(btn, ehErro) {
+          if (respondida || btn.classList.contains('errada')) return;
+          if (ehErro) {
+            ctx.ganharXP(xp);
+            marcar(btn);
+            say(caixa('ok', `Pegou! O certo é “${q.palavraCerta}”. +${xp} XP`, `Padrão da banca: ${minus(q.padrao)}. ${q.explicacao}`));
+            encerrar(true);
+            return;
+          }
+          erros += 1;
+          vidas = Math.max(0, vidas - 1);
+          btn.classList.add('errada');
+          ctx.vidas(vidas, MAX);
+          if (vidas === 0) {
+            marcar(botaoErro);
+            say(caixa('erro', `Acabaram as vidas. A palavra trocada era “${q.palavraTrocada}”.`, q.explicacao));
+            encerrar(false);
+          } else {
+            say(caixa('erro', 'Essa palavra está certa.', 'Você perdeu uma vida. Tente outra.'));
+          }
+        }
+        tokens(q.texto).forEach((t, k) => {
+          const b = h('button', { type: 'button', class: 'palavra', onclick: () => tocar(b, k === alvo) }, t);
+          if (k === alvo) botaoErro = b;
+          texto.append(b, ' ');
+        });
+
+        async function seguir() {
+          if (!respondida) { say(caixa('erro', null, 'Encontre a palavra trocada antes de seguir.')); return; }
+          if (vidas === 0) {
+            await ctx.revisao({ ...(dados.revisao || {}), segundos: dados.revisaoSegundos ?? 30 });
+            vidas = 1;
+          }
+          i += 1;
+          if (i >= fila.length) {
+            ctx.pratica(acertosDePrimeira, fila.length);
+            ctx.concluir({ resumo: `${achadas} de ${fila.length} pegadinhas encontradas, ${acertosDePrimeira} de primeira.` });
+          } else mostrar();
+        }
+
+        ctx.palco.replaceChildren(
+          h('article', { class: 'cartao' }, h('p', { class: 'ref' }, `${q.lei} · ${q.artigo}`), texto),
+          feedback,
+          h('div', { class: 'acoes' },
+            h('button', { type: 'button', class: 'botao', onclick: () => { if (!respondida) say(caixa('dica', 'Dica', q.dica || 'Releia com calma.')); } }, icone('bulb'), 'Dica'),
+            proxima));
+      }
+      mostrar();
+    }
+  });
+
+  ETAPAS.push({
+    id: 'relampago', titulo: 'Relâmpago', icone: 'zap', json: 'json-relampago',
+    iniciar(ctx) {
+      const { h, icone, dados } = ctx;
+      const total = dados.duracao ?? 75;
+      const xp = dados.xpPorAcerto ?? 5;
+      const lista = dados.embaralhar ? ctx.embaralhar(dados.afirmacoes || []) : (dados.afirmacoes || []);
+      if (!lista.length) { ctx.concluir({ resumo: 'Sem afirmações.' }); return; }
+
+      let i = 0, resta = total, combo = 0, melhor = 0, certas = 0, respondidas = 0, travado = false, acabou = false;
+      const rotuloTempo = h('span', { role: 'timer' }, '');
+      const barra = h('div', null);
+      const tempo = h('div', { class: 'tempo' }, icone('clock'), rotuloTempo, h('div', { class: 'trilho' }, barra));
+      const comboEl = h('div', { class: 'combo' });
+      const afirmacao = h('article', { class: 'cartao afirmacao' });
+      const feedback = h('div', { class: 'feedback', role: 'status', style: 'min-height:56px' });
+      const btnCerto = h('button', { type: 'button', class: 'botao', onclick: () => responder(true) }, 'Certo');
+      const btnErrado = h('button', { type: 'button', class: 'botao', onclick: () => responder(false) }, 'Errado');
+
+      const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+      function desenharTempo() {
+        rotuloTempo.textContent = fmt(Math.max(0, Math.ceil(resta)));
+        barra.style.width = `${Math.max(0, (resta / total) * 100)}%`;
+        tempo.classList.toggle('urgente', resta <= 15);
+      }
+      function desenharCombo() {
+        comboEl.replaceChildren(h('span', null, `Afirmação ${Math.min(i + 1, lista.length)} de ${lista.length}`), h('span', null, 'Combo ', h('b', null, `x${combo}`)));
+        ctx.sub(`${certas} ${certas === 1 ? 'acerto' : 'acertos'}`);
+      }
+      function mostrar() {
+        const a = lista[i];
+        travado = false;
+        [btnCerto, btnErrado].forEach((b) => b.classList.remove('certo', 'errado'));
+        afirmacao.replaceChildren(h('p', { class: 'ref' }, a.artigo), h('p', { class: 'texto' }, a.texto));
+        feedback.replaceChildren();
+        desenharCombo();
+      }
+      function terminar() {
+        if (acabou) return;
+        acabou = true;
+        ctx.pratica(certas, respondidas);
+        const motivo = resta <= 0 ? 'O tempo acabou.' : 'Todas respondidas.';
+        ctx.concluir({ resumo: `${motivo} ${certas} de ${respondidas} certas · melhor combo x${melhor}.` });
+      }
+      function responder(resp) {
+        if (travado || acabou) return;
+        travado = true;
+        const a = lista[i];
+        const acertou = resp === a.certo;
+        respondidas += 1;
+        const botao = resp ? btnCerto : btnErrado;
+        if (acertou) {
+          certas += 1; combo += 1; melhor = Math.max(melhor, combo);
+          let ganho = xp;
+          if (dados.comboACada && combo % dados.comboACada === 0) ganho += dados.xpBonusCombo ?? 0;
+          ctx.ganharXP(ganho);
+          botao.classList.add('certo');
+          feedback.replaceChildren(ctx.caixa('ok', `Certo! +${ganho} XP`, combo > 1 ? `Combo x${combo}.` : ''));
+        } else {
+          combo = 0;
+          botao.classList.add('errado');
+          ctx.erro({ resumo: `${a.texto} (${a.artigo})`, resposta: a.certo ? 'Certo' : 'Errado', explicacao: a.explicacao });
+          feedback.replaceChildren(ctx.caixa('erro', `Era ${a.certo ? 'Certo' : 'Errado'}.`, a.explicacao));
+        }
+        desenharCombo();
+        ctx.espera(() => {
+          i += 1;
+          if (i >= lista.length || resta <= 0) terminar(); else mostrar();
+        }, acertou ? (dados.pausaAcertoMs ?? 600) : (dados.pausaErroMs ?? 1800));
+      }
+
+      ctx.palco.replaceChildren(tempo, comboEl, afirmacao, feedback, h('div', { class: 'acoes respostas' }, btnErrado, btnCerto));
+      desenharTempo();
+      mostrar();
+      ctx.intervalo(() => {
+        resta -= 0.25;
+        desenharTempo();
+        if (resta <= 0) terminar();
+      }, 250);
+    }
+  });
+
+  ETAPAS.push({
+    id: 'chefao', titulo: 'Chefão', icone: 'crown', json: 'json-chefao',
+    iniciar(ctx) {
+      const { h, icone, caixa, dados } = ctx;
+      const perguntas = dados.perguntas || [];
+      if (!perguntas.length) { ctx.concluir({ resumo: 'Sem perguntas.' }); return; }
+      const MAX = dados.vidas ?? 3;
+      const xp = dados.xpPorAcerto ?? 20;
+      let i = 0, vidas = MAX, derrotadas = 0, deprimeira = 0;
+
+      function mostrar() {
+        const q = perguntas[i];
+        let respondida = false, erros = 0;
+        ctx.sub(`Pergunta ${i + 1} de ${perguntas.length}`);
+        ctx.vidas(vidas, MAX);
+        const vida = h('div', { style: `width:${((perguntas.length - derrotadas) / perguntas.length) * 100}%` });
+        const feedback = h('div', { class: 'feedback', role: 'status' }, h('div', { class: 'caixa instrucao' }, h('p', null, 'Escolha a alternativa que aplica o artigo ao caso.')));
+        const lista = h('div', { class: 'alternativas' });
+        const botoes = new Map();
+        const proxima = h('button', { type: 'button', class: 'botao primario', hidden: true, onclick: seguir }, i === perguntas.length - 1 ? 'Enfrentar o resultado' : 'Próxima pergunta', icone('arrow'));
+
+        async function escolher(alt, btn) {
+          if (respondida || btn.disabled) return;
+          if (alt.correta) {
+            respondida = true;
+            derrotadas += 1;
+            if (erros === 0) deprimeira += 1;
+            ctx.ganharXP(xp);
+            btn.classList.add('certa');
+            vida.style.width = `${((perguntas.length - derrotadas) / perguntas.length) * 100}%`;
+            botoes.forEach((b) => { b.disabled = true; });
+            feedback.replaceChildren(caixa('ok', `Golpe certeiro! +${xp} XP`, `${q.explicacao} (${q.fundamento})`));
+            proxima.hidden = false;
+            proxima.focus({ preventScroll: true });
+            return;
+          }
+          erros += 1;
+          vidas = Math.max(0, vidas - 1);
+          btn.classList.add('errada');
+          btn.disabled = true;
+          ctx.vidas(vidas, MAX);
+          if (erros === 1) ctx.erro({ resumo: `${q.enunciado} (${q.fundamento})`, resposta: q.alternativas.find((a) => a.correta).texto, explicacao: q.explicacao });
+          feedback.replaceChildren(caixa('erro', 'Essa não é a certa. Você perdeu uma vida.', alt.porque || 'Releia o caso e o artigo.'));
+          if (vidas === 0) {
+            await ctx.revisao({ ...(dados.revisao || {}), segundos: dados.revisaoSegundos ?? 30 });
+            vidas = 1;
+            ctx.vidas(vidas, MAX);
+            feedback.replaceChildren(caixa('dica', 'De volta ao caso', 'Você recuperou uma vida. Tente outra alternativa.'));
+          }
+        }
+
+        q.alternativas.forEach((alt, k) => {
+          const b = h('button', { type: 'button', class: 'alt', onclick: () => escolher(alt, b) }, h('b', null, String.fromCharCode(65 + k)), h('span', null, alt.texto));
+          botoes.set(alt.id, b);
+          lista.append(b);
+        });
+
+        function seguir() {
+          i += 1;
+          if (i < perguntas.length) { mostrar(); return; }
+          ctx.pratica(deprimeira, perguntas.length);
+          ctx.ganharXP(dados.xpBonusVitoria ?? 0);
+          ctx.concluir({ resumo: `${dados.chefe || 'O chefão'} foi derrotado. ${deprimeira} de ${perguntas.length} perguntas de primeira, +${dados.xpBonusVitoria ?? 0} XP de bônus.` });
+        }
+
+        ctx.palco.replaceChildren(
+          h('div', { class: 'chefe' }, icone('crown'), h('span', null, dados.chefe || 'Chefão'), h('div', { class: 'vida', role: 'img', 'aria-label': 'Vida do chefão' }, vida)),
+          h('article', { class: 'cartao' },
+            i === 0 && dados.caso && h('p', { class: 'cena' }, dados.caso),
+            h('p', { class: 'cena' }, q.contexto),
+            h('p', { class: 'enunciado' }, q.enunciado),
+            lista),
+          feedback,
+          h('div', { class: 'acoes' }, proxima));
+      }
+      mostrar();
+    }
+  });
+
+  ETAPAS.push({
+    id: 'fechamento', titulo: 'Fechamento', icone: 'trophy', json: 'json-fechamento',
+    iniciar(ctx) {
+      const { h, icone, caixa, dados } = ctx;
+      const p = sessao.pratica;
+      const dominio = p.total ? p.acertos / p.total : 0;
+      const nivel = (dados.carta?.niveis || []).find((n) => dominio >= n.min);
+      const pct = (n) => `${Math.round(n * 100)}%`;
+      const prova = dados.prova || {};
+      const dominados = (prova.artigosDominados || 0) + (nivel ? 1 : 0);
+      const falta = Math.max(0, (prova.artigosNoEdital || 0) - dominados);
+      const dias = prova.dataProva ? Math.ceil((new Date(`${prova.dataProva}T00:00:00`) - new Date().setHours(0, 0, 0, 0)) / 86400000) : null;
+
+      const xpPorEtapa = ETAPAS.slice(0, -1).map((e) => h('li', null, h('span', null, e.titulo), h('span', { class: 'status bom' }, `+${sessao.resultados[e.id]?.xp ?? 0} XP`)));
+      const erros = sessao.erros.length
+        ? sessao.erros.map((e) => h('details', null,
+          h('summary', null, h('span', { class: 'chip' }, e.etapa), ' ', e.resumo),
+          e.resposta && h('p', { class: 'resp' }, `Resposta: ${e.resposta}`),
+          e.explicacao && h('p', { class: 'resp' }, e.explicacao)))
+        : [h('p', { class: 'suave' }, 'Nenhum erro hoje. O caderno ficou limpo.')];
+
+      let ritmo = '';
+      if (dias == null) ritmo = '';
+      else if (dias < 0) ritmo = 'A data da prova já passou. Atualize "dataProva" no JSON.';
+      else if (falta === 0) ritmo = 'Edital inteiro dominado. Agora é revisar.';
+      else ritmo = `Faltam ${dias} dias e ${falta} artigos: cerca de ${(falta / Math.max(dias, 1)).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} artigo por dia.`;
+
+      ctx.sub('Sessão concluída');
+      ctx.palco.replaceChildren(
+        h('article', { class: 'cartao' },
+          h('h2', { tabindex: -1, id: 'foco-fim' }, 'Sessão concluída'),
+          h('p', { class: 'suave' }, 'Você fechou as 5 etapas de hoje.'),
+          h('div', { class: 'numeros' },
+            h('div', { class: 'numero' }, h('span', { class: 'rotulo' }, 'XP hoje'), h('span', { class: 'valor' }, sessao.xp)),
+            h('div', { class: 'numero' }, h('span', { class: 'rotulo' }, 'Sequência'), h('span', { class: 'valor' }, `${sessao.streak} ${sessao.streak === 1 ? 'dia' : 'dias'}`)),
+            h('div', { class: 'numero' }, h('span', { class: 'rotulo' }, 'Domínio'), h('span', { class: 'valor' }, pct(dominio))),
+            h('div', { class: 'numero' }, h('span', { class: 'rotulo' }, 'Erros no caderno'), h('span', { class: 'valor' }, sessao.erros.length))),
+          h('ul', { class: 'lista' }, xpPorEtapa),
+          nivel
+            ? h('div', { class: `carta ${nivel.estilo || ''}` }, icone('star'), h('strong', null, `Carta ${nivel.nome} desbloqueada`), h('span', null, `${dados.carta.titulo} · ${dados.carta.artigo}`))
+            : h('div', { style: 'margin-top:14px' }, caixa('dica', 'Carta ainda não desbloqueada', `Seu domínio foi de ${pct(dominio)}. Rever o caderno de erros ajuda a desbloquear na próxima.`)),
+          h('div', { class: 'secao erros' }, h('h3', null, 'Caderno de erros atualizado'), erros),
+          dados.amanha && h('div', { class: 'secao' }, h('h3', null, 'Prévia de amanhã'),
+            h('div', { class: 'proxima' }, icone('calendar'), h('div', null, h('strong', null, `${dados.amanha.artigo}: ${dados.amanha.titulo}`), h('span', null, dados.amanha.reforco)))),
+          prova.artigosNoEdital && h('div', { class: 'secao' }, h('h3', null, 'Rumo à prova'),
+            h('p', { class: 'suave' }, `${dominados} de ${prova.artigosNoEdital} artigos do edital dominados`),
+            h('div', { class: 'barra-prova', role: 'img', 'aria-label': `${dominados} de ${prova.artigosNoEdital} artigos` }, h('div', { style: `width:${(dominados / prova.artigosNoEdital) * 100}%` })),
+            ritmo && h('p', { class: 'suave' }, ritmo))),
+        h('div', { class: 'acoes', style: 'margin-top:12px' },
+          h('button', { type: 'button', class: 'botao primario', onclick: ctx.reiniciar }, icone('refresh'), 'Jogar de novo')));
+      $('foco-fim').focus({ preventScroll: true });
+    }
+  });
+
+  el.sair.append(icone('x'));
+  el.sair.addEventListener('click', sair);
+  iniciar();
+})();
+</script>
+</body>
+</html>
