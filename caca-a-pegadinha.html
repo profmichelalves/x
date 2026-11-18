@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caça à pegadinha</title>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+
+  :root {
+    color-scheme: light dark;
+    --fundo: #f5f4ef;
+    --cartao: #ffffff;
+    --superficie: #efeee8;
+    --texto: #1f1e1c;
+    --texto-2: #5f5e5a;
+    --texto-3: #8a8880;
+    --borda: rgba(31, 30, 28, 0.14);
+    --borda-forte: rgba(31, 30, 28, 0.28);
+    --acento: #185fa5;
+    --perigo: #e24b4a;
+    --ok-fundo: #eaf3de;   --ok-borda: #97c459;   --ok-texto: #27500a;
+    --erro-fundo: #fcebeb; --erro-borda: #f09595; --erro-texto: #791f1f;
+    --aviso-fundo: #faeeda; --aviso-texto: #633806;
+    --raio: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fundo: #1b1b19;
+      --cartao: #262624;
+      --superficie: #30302d;
+      --texto: #f1efe8;
+      --texto-2: #b4b2a9;
+      --texto-3: #888780;
+      --borda: rgba(255, 255, 255, 0.14);
+      --borda-forte: rgba(255, 255, 255, 0.28);
+      --acento: #85b7eb;
+      --ok-fundo: #173404;   --ok-borda: #3b6d11;   --ok-texto: #c0dd97;
+      --erro-fundo: #501313; --erro-borda: #a32d2d; --erro-texto: #f7c1c1;
+      --aviso-fundo: #412402; --aviso-texto: #fac775;
+    }
+  }
+
+  body {
+    margin: 0;
+    background: var(--fundo);
+    color: var(--texto);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  button:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+
+  .tela { max-width: 440px; margin: 0 auto; padding: 16px; }
+
+  .topo { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .icone {
+    display: grid; place-items: center; width: 36px; height: 36px; padding: 0;
+    border: 0; border-radius: 50%; background: none; color: var(--texto-2); cursor: pointer;
+  }
+  .icone svg { width: 20px; height: 20px; }
+  .progresso { flex: 1; height: 8px; border-radius: 4px; background: var(--borda-forte); overflow: hidden; }
+  .progresso > div { height: 100%; width: 0; border-radius: 4px; background: var(--acento); transition: width 0.3s ease; }
+  .vidas { display: flex; gap: 2px; }
+  .coracao { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .coracao.viva { color: var(--perigo); fill: var(--perigo); }
+  .coracao.perdida { color: var(--texto-3); }
+
+  .meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 13px; color: var(--texto-2); }
+  .meta h1 { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 14px; font-weight: 500; color: inherit; }
+
+  .icone svg, .meta h1 svg, .botao svg {
+    fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .meta h1 svg { width: 16px; height: 16px; }
+
+  .cartao { background: var(--cartao); border: 1px solid var(--borda); border-radius: 14px; padding: 16px 18px; }
+  .ref { margin: 0 0 6px; font-size: 12px; color: var(--texto-3); }
+  .texto { margin: 0; font-size: 18px; line-height: 1.6; }
+
+  .palavra {
+    font: inherit; color: inherit; background: none; border: 0; margin: 0;
+    padding: 0 4px; line-height: 32px; border-radius: 6px; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  @media (hover: hover) { .palavra:hover { background: var(--superficie); } }
+  .palavra.errada { background: var(--erro-fundo); color: var(--erro-texto); animation: tremer 0.25s; }
+  .palavra.certa { background: var(--ok-fundo); color: var(--ok-texto); }
+  .texto.trancada { pointer-events: none; }
+
+  .feedback { min-height: 96px; margin: 12px 0; }
+  .caixa { padding: 10px 12px; border: 1px solid transparent; border-radius: var(--raio); font-size: 14px; animation: surgir 0.2s ease-out; }
+  .caixa p { margin: 0; }
+  .caixa .caixa-titulo { font-weight: 500; margin-bottom: 2px; }
+  .caixa.instrucao { padding: 0; border: 0; animation: none; color: var(--texto-2); }
+  .caixa.dica { background: var(--superficie); border-color: var(--borda); }
+  .caixa.ok { background: var(--ok-fundo); border-color: var(--ok-borda); color: var(--ok-texto); }
+  .caixa.erro { background: var(--erro-fundo); border-color: var(--erro-borda); color: var(--erro-texto); }
+
+  .acoes { display: flex; gap: 8px; }
+  .botao {
+    flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    min-height: 44px; padding: 0 16px; font: inherit; font-weight: 500;
+    color: var(--texto); background: transparent; border: 1px solid var(--borda-forte);
+    border-radius: var(--raio); cursor: pointer;
+  }
+  .botao svg { width: 18px; height: 18px; }
+  .botao:active { transform: scale(0.98); }
+  .botao.primario { background: var(--texto); color: var(--cartao); border-color: var(--texto); }
+  @media (hover: hover) {
+    .botao:hover { background: var(--superficie); }
+    .botao.primario:hover { background: var(--texto-2); border-color: var(--texto-2); }
+  }
+
+  .resultado h2 { margin: 0 0 4px; font-size: 18px; font-weight: 500; }
+  .resultado h2:focus { outline: none; }
+  .resumo { margin: 0 0 14px; font-size: 14px; color: var(--texto-2); }
+  .numeros { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+  .numero { background: var(--superficie); border-radius: var(--raio); padding: 12px; }
+  .numero .rotulo { display: block; font-size: 13px; color: var(--texto-2); }
+  .numero .valor { font-size: 24px; font-weight: 500; }
+  .lista { list-style: none; margin: 0; padding: 0; }
+  .lista li {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    padding: 10px 0; border-top: 1px solid var(--borda); font-size: 14px;
+  }
+  .status { padding: 2px 10px; border-radius: 999px; font-size: 12px; }
+  .status.bom { background: var(--ok-fundo); color: var(--ok-texto); }
+  .status.meio { background: var(--aviso-fundo); color: var(--aviso-texto); }
+  .status.ruim { background: var(--erro-fundo); color: var(--erro-texto); }
+  .resultado > .acoes { margin-top: 12px; }
+
+  @keyframes tremer { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+  @keyframes surgir { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<main class="tela">
+  <header class="topo">
+    <button type="button" class="icone" id="btn-sair" aria-label="Sair da etapa">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="progresso" id="progresso" role="progressbar" aria-label="Progresso da etapa" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0">
+      <div id="barra"></div>
+    </div>
+    <div class="vidas" id="vidas" role="img" aria-label="Vidas"></div>
+  </header>
+
+  <div class="meta">
+    <h1>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      Caça à pegadinha
+    </h1>
+    <span id="placar"></span>
+  </div>
+
+  <section id="jogo" aria-label="Questão">
+    <article class="cartao">
+      <p class="ref" id="referencia"></p>
+      <p class="texto" id="texto"></p>
+    </article>
+    <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+    <div class="acoes">
+      <button type="button" class="botao" id="btn-dica">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+        Dica
+      </button>
+      <button type="button" class="botao primario" id="btn-proxima">Próxima</button>
+    </div>
+  </section>
+
+  <section id="resultado" class="resultado" hidden aria-labelledby="resultado-titulo">
+    <article class="cartao">
+      <h2 id="resultado-titulo" tabindex="-1">Etapa concluída</h2>
+      <p class="resumo" id="resultado-resumo"></p>
+      <div class="numeros">
+        <div class="numero"><span class="rotulo">Acertos</span><span class="valor" id="res-acertos"></span></div>
+        <div class="numero"><span class="rotulo">XP ganho</span><span class="valor" id="res-xp"></span></div>
+      </div>
+      <ul class="lista" id="resultado-lista"></ul>
+    </article>
+    <div class="acoes">
+      <button type="button" class="botao primario" id="btn-reiniciar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        Jogar de novo
+      </button>
+    </div>
+  </section>
+</main>
+
+<!--
+  QUESTÕES (JSON estático). Para adicionar uma pegadinha, copie um objeto de "questoes" e edite:
+    texto           o artigo JÁ com a palavra trocada
+    palavraTrocada  a palavra errada que aparece no texto
+    palavraCerta    o que a lei realmente diz
+    padrao          tipo de armadilha, mostrado no feedback
+    explicacao      por que a palavra certa é essa
+    dica            pista curta
+    ocorrencia      (opcional) se palavraTrocada aparece mais de uma vez no texto,
+                    qual delas é a pegadinha (1 = primeira, 2 = segunda...)
+  config:
+    vidas, xpPorAcerto, questoesPorRodada, embaralhar (sorteia a ordem antes de cortar)
+-->
+<script id="dados-questoes" type="application/json">
+{
+  "config": {
+    "vidas": 3,
+    "xpPorAcerto": 10,
+    "questoesPorRodada": 3,
+    "embaralhar": false
+  },
+  "questoes": [
+    {
+      "id": "cf88-art41-01",
+      "lei": "Constituição Federal",
+      "artigo": "art. 41, caput",
+      "texto": "São estáveis após dois anos de efetivo exercício os servidores nomeados para cargo de provimento efetivo em virtude de concurso público.",
+      "palavraTrocada": "dois",
+      "palavraCerta": "três",
+      "padrao": "Prazo trocado",
+      "explicacao": "Desde a EC 19/1998 o prazo é de três anos. Bancas adoram mexer em números.",
+      "dica": "Olhe os números."
+    },
+    {
+      "id": "cf88-art41-02",
+      "lei": "Constituição Federal",
+      "artigo": "art. 41, caput",
+      "texto": "São estáveis após três anos de efetivo exercício os servidores nomeados para cargo de provimento comissionado em virtude de concurso público.",
+      "palavraTrocada": "comissionado",
+      "palavraCerta": "efetivo",
+      "padrao": "Conceito trocado",
+      "explicacao": "Estabilidade vale para cargo de provimento efetivo. Cargo em comissão é de livre nomeação e exoneração.",
+      "dica": "Olhe o tipo de cargo."
+    },
+    {
+      "id": "cf88-art41-03",
+      "lei": "Constituição Federal",
+      "artigo": "art. 41, caput",
+      "texto": "São vitalícios após três anos de efetivo exercício os servidores nomeados para cargo de provimento efetivo em virtude de concurso público.",
+      "palavraTrocada": "vitalícios",
+      "palavraCerta": "estáveis",
+      "padrao": "Instituto parecido",
+      "explicacao": "Vitaliciedade é de carreiras específicas, como a magistratura. O servidor concursado adquire estabilidade.",
+      "dica": "Olhe o instituto."
+    }
+  ]
+}
+</script>
+
+<script>
+(() => {
+  'use strict';
+
+  const $ = (id) => document.getElementById(id);
+  const el = {
+    barra: $('barra'), progresso: $('progresso'), vidas: $('vidas'), placar: $('placar'),
+    jogo: $('jogo'), referencia: $('referencia'), texto: $('texto'), feedback: $('feedback'),
+    dica: $('btn-dica'), proxima: $('btn-proxima'), sair: $('btn-sair'),
+    resultado: $('resultado'), resultadoTitulo: $('resultado-titulo'), resumo: $('resultado-resumo'),
+    acertos: $('res-acertos'), xp: $('res-xp'), lista: $('resultado-lista'), reiniciar: $('btn-reiniciar')
+  };
+
+  const REGEX_PARTES = /^([^\p{L}\p{N}]*)(.*?)([^\p{L}\p{N}]*)$/u;
+  const partes = (token) => token.match(REGEX_PARTES);
+  const minusculo = (texto) => texto.toLocaleLowerCase('pt-BR');
+  const tokenizar = (texto) => texto.trim().split(/\s+/);
+
+  function mostrarFeedback(tipo, titulo, corpo) {
+    const caixa = document.createElement('div');
+    caixa.className = `caixa ${tipo}`;
+    if (titulo) {
+      const t = document.createElement('p');
+      t.className = 'caixa-titulo';
+      t.textContent = titulo;
+      caixa.append(t);
+    }
+    const c = document.createElement('p');
+    c.textContent = corpo;
+    caixa.append(c);
+    el.feedback.replaceChildren(caixa);
+  }
+
+  // Lê o JSON embutido na página. Para usar um arquivo externo, troque por:
+  //   const DADOS = await (await fetch('questoes.json')).json();
+  // (precisa de servidor local; fetch não funciona abrindo o arquivo direto)
+  let DADOS;
+  try {
+    DADOS = JSON.parse($('dados-questoes').textContent);
+  } catch (erro) {
+    console.error(erro);
+    mostrarFeedback('erro', 'Não foi possível ler as questões', 'Confira o JSON no bloco #dados-questoes.');
+    return;
+  }
+
+  const CFG = { vidas: 3, xpPorAcerto: 10, questoesPorRodada: 3, embaralhar: false, ...(DADOS.config || {}) };
+  let estado = null;
+  const atual = () => estado.fila[estado.indice];
+
+  function indiceDoErro(q) {
+    const alvo = minusculo(partes(q.palavraTrocada)[2]);
+    let vistas = 0;
+    return tokenizar(q.texto).findIndex(
+      (token) => minusculo(partes(token)[2]) === alvo && ++vistas === (q.ocorrencia || 1)
+    );
+  }
+
+  function questoesValidas() {
+    const lista = Array.isArray(DADOS.questoes) ? DADOS.questoes : [];
+    return lista.filter((q) => {
+      const ok = q.texto && q.palavraTrocada && q.palavraCerta && indiceDoErro(q) >= 0;
+      if (!ok) console.warn('Questão ignorada (campo ausente ou palavra trocada não encontrada no texto):', q.id);
+      return ok;
+    });
+  }
+
+  function embaralharLista(lista) {
+    const copia = [...lista];
+    for (let i = copia.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copia[i], copia[j]] = [copia[j], copia[i]];
+    }
+    return copia;
+  }
+
+  function desenharVidas() {
+    el.vidas.innerHTML = Array.from({ length: CFG.vidas }, (_, i) =>
+      `<svg class="coracao ${i < estado.vidas ? 'viva' : 'perdida'}" viewBox="0 0 24 24" aria-hidden="true">` +
+      '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
+    ).join('');
+    el.vidas.setAttribute('aria-label', `${estado.vidas} de ${CFG.vidas} vidas`);
+  }
+
+  function desenharPlacar() {
+    const total = estado.fila.length;
+    const feitas = Math.min(estado.indice + (estado.respondida ? 1 : 0), total);
+    el.placar.textContent = `Rodada ${Math.min(estado.indice + 1, total)} de ${total} · ${estado.xp} XP`;
+    el.barra.style.width = `${(feitas / total) * 100}%`;
+    el.progresso.setAttribute('aria-valuemax', total);
+    el.progresso.setAttribute('aria-valuenow', feitas);
+  }
+
+  function renderizar() {
+    const q = atual();
+    const idx = indiceDoErro(q);
+    estado.respondida = false;
+    estado.errosNaQuestao = 0;
+    el.referencia.textContent = `${q.lei} · ${q.artigo}`;
+    el.texto.classList.remove('trancada');
+    el.texto.replaceChildren(...tokenizar(q.texto).flatMap((token, i) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'palavra';
+      btn.textContent = token;
+      btn.addEventListener('click', () => tocar(btn, i === idx));
+      if (i === idx) estado.botaoErro = btn;
+      return [btn, ' '];
+    }));
+    el.proxima.textContent = estado.indice === estado.fila.length - 1 ? 'Ver resultado' : 'Próxima';
+    mostrarFeedback('instrucao', null, 'Uma palavra foi trocada. Toque nela.');
+    desenharVidas();
+    desenharPlacar();
+  }
+
+  function marcarCerta(btn, q) {
+    const [, inicio, miolo, fim] = partes(btn.textContent);
+    const riscada = document.createElement('s');
+    riscada.textContent = miolo;
+    btn.classList.add('certa');
+    btn.replaceChildren(inicio, riscada, ' ', q.palavraCerta, fim);
+  }
+
+  function encerrarQuestao(achou) {
+    estado.respondida = true;
+    estado.historico.push({ padrao: atual().padrao, achou, erros: estado.errosNaQuestao });
+    el.texto.classList.add('trancada');
+    desenharPlacar();
+    el.proxima.focus({ preventScroll: true });
+  }
+
+  function tocar(btn, ehErro) {
+    if (estado.respondida || btn.classList.contains('errada')) return;
+    const q = atual();
+
+    if (ehErro) {
+      estado.acertos += 1;
+      estado.xp += CFG.xpPorAcerto;
+      marcarCerta(btn, q);
+      mostrarFeedback(
+        'ok',
+        `Pegou! O certo é “${q.palavraCerta}”. +${CFG.xpPorAcerto} XP`,
+        `Padrão da banca: ${minusculo(q.padrao)}. ${q.explicacao}`
+      );
+      encerrarQuestao(true);
+      return;
+    }
+
+    estado.errosNaQuestao += 1;
+    estado.vidas = Math.max(0, estado.vidas - 1);
+    btn.classList.add('errada');
+    desenharVidas();
+
+    if (estado.vidas === 0) {
+      marcarCerta(estado.botaoErro, q);
+      mostrarFeedback(
+        'erro',
+        `Acabaram as vidas. A palavra trocada era “${q.palavraTrocada}”.`,
+        `${q.explicacao} Uma revisão de 30 s devolve uma vida.`
+      );
+      encerrarQuestao(false);
+    } else {
+      mostrarFeedback('erro', 'Essa palavra está certa.', 'Você perdeu uma vida. Tente outra.');
+    }
+  }
+
+  function dica() {
+    if (!estado || estado.respondida) return;
+    mostrarFeedback('dica', 'Dica', atual().dica);
+  }
+
+  function proxima() {
+    if (!estado) return;
+    if (!estado.respondida) {
+      mostrarFeedback('erro', null, 'Encontre a palavra trocada antes de seguir.');
+      return;
+    }
+    if (estado.vidas === 0) estado.vidas = 1;
+    estado.indice += 1;
+    if (estado.indice >= estado.fila.length) mostrarResultado();
+    else renderizar();
+  }
+
+  function mostrarResultado() {
+    const { historico, acertos, xp, fila } = estado;
+    const perfeito = historico.every((h) => h.achou && h.erros === 0);
+    el.jogo.hidden = true;
+    el.resultado.hidden = false;
+    desenharPlacar();
+    el.acertos.textContent = `${acertos} de ${fila.length}`;
+    el.xp.textContent = xp;
+    el.resumo.textContent = perfeito
+      ? 'Nenhuma pegadinha passou. Olho treinado.'
+      : acertos === fila.length
+        ? 'Todas encontradas, mas algumas custaram vidas. Vale rever os padrões abaixo.'
+        : 'Algumas pegadinhas passaram. Revise os padrões abaixo antes da próxima rodada.';
+    el.lista.replaceChildren(...historico.map((h) => {
+      const li = document.createElement('li');
+      const nome = document.createElement('span');
+      nome.textContent = h.padrao;
+      const status = document.createElement('span');
+      status.className = `status ${h.achou ? (h.erros ? 'meio' : 'bom') : 'ruim'}`;
+      status.textContent = h.achou ? (h.erros ? 'Com erros' : 'De primeira') : 'Não achou';
+      li.append(nome, status);
+      return li;
+    }));
+    el.resultadoTitulo.focus();
+  }
+
+  function iniciar() {
+    let fila = questoesValidas();
+    if (CFG.embaralhar) fila = embaralharLista(fila);
+    fila = fila.slice(0, CFG.questoesPorRodada);
+    el.resultado.hidden = true;
+    el.jogo.hidden = false;
+    if (!fila.length) {
+      estado = null;
+      mostrarFeedback('erro', 'Sem questões', 'Nenhuma questão válida no JSON. Veja o console do navegador.');
+      return;
+    }
+    estado = {
+      fila, indice: 0, vidas: CFG.vidas, xp: 0, acertos: 0,
+      respondida: false, errosNaQuestao: 0, botaoErro: null, historico: []
+    };
+    renderizar();
+  }
+
+  function sair() {
+    if (!confirm('Sair da etapa? O progresso desta rodada será perdido.')) return;
+    document.dispatchEvent(new CustomEvent('caca:sair'));
+    iniciar();
+  }
+
+  el.dica.addEventListener('click', dica);
+  el.proxima.addEventListener('click', proxima);
+  el.reiniciar.addEventListener('click', iniciar);
+  el.sair.addEventListener('click', sair);
+
+  iniciar();
+})();
+</script>
+</body>
+</html>
