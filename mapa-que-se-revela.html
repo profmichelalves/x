@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapa que se revela · LGPD</title>
+<style>
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+@property --p { syntax: '<number>'; inherits: false; initial-value: 0; }
+
+:root {
+  color-scheme: light dark;
+  --fundo: #f5f4ef; --cartao: #ffffff; --superficie: #efeee8;
+  --texto: #1f1e1c; --texto-2: #5f5e5a; --texto-3: #6f6d66;
+  --borda: rgba(31, 30, 28, 0.16); --borda-forte: rgba(31, 30, 28, 0.32);
+  --acento: #185fa5;
+  --ok-fundo: #eaf3de; --ok-borda: #97c459; --ok-texto: #27500a;
+  --erro-fundo: #fcebeb; --erro-borda: #f09595; --erro-texto: #791f1f;
+  --neutro: #dedcd5; --nuvem: 255, 255, 255;
+  --terra-s: 62%; --terra-l: 82%; --linha-l: 36%;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fundo: #1b1b19; --cartao: #262624; --superficie: #30302d;
+    --texto: #f1efe8; --texto-2: #b4b2a9; --texto-3: #9a988f;
+    --borda: rgba(255, 255, 255, 0.16); --borda-forte: rgba(255, 255, 255, 0.32);
+    --acento: #85b7eb;
+    --ok-fundo: #173404; --ok-borda: #3b6d11; --ok-texto: #c0dd97;
+    --erro-fundo: #501313; --erro-borda: #a32d2d; --erro-texto: #f7c1c1;
+    --neutro: #3b3b37; --nuvem: 165, 165, 158;
+    --terra-s: 42%; --terra-l: 26%; --linha-l: 64%;
+  }
+}
+
+body { margin: 0; background: var(--fundo); color: var(--texto); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+button { font: inherit; color: inherit; }
+button:focus-visible, summary:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+.app { max-width: 560px; margin: 0 auto; padding: 20px 16px 48px; }
+.ic { width: 1.2em; height: 1.2em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ref { margin: 0; font-size: 12px; color: var(--texto-3); }
+.suave { margin: 0; font-size: 14px; color: var(--texto-2); }
+h1 { margin: 2px 0 14px; font-size: 24px; font-weight: 500; }
+
+.painel { display: flex; align-items: center; gap: 16px; margin-bottom: 10px; }
+.anel { --p: 0; width: 88px; height: 88px; flex: none; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(var(--acento) calc(var(--p) * 1%), var(--borda) 0); transition: --p 0.9s ease; }
+.anel > div { width: 70px; height: 70px; display: grid; place-items: center; border-radius: 50%; background: var(--fundo); font-size: 22px; font-weight: 500; }
+.stats { display: flex; flex-direction: column; gap: 2px; font-size: 14px; color: var(--texto-2); }
+.stats strong { font-size: 16px; font-weight: 500; color: var(--texto); }
+
+.ferramentas { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 10px; }
+.chip-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; font-size: 14px; background: var(--cartao); border: 1px solid var(--borda-forte); border-radius: 999px; cursor: pointer; }
+.chip-btn[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: var(--cartao); }
+@media (hover: hover) { .chip-btn:hover { background: var(--superficie); } .chip-btn[aria-pressed="true"]:hover { background: var(--acento); } }
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--texto-2); }
+.leg { display: inline-block; width: 14px; height: 14px; margin-right: 6px; vertical-align: -2px; border: 1.5px solid var(--borda-forte); border-radius: 4px; }
+.leg.n { background: var(--neutro); }
+.leg.p { background: color-mix(in srgb, hsl(205 var(--terra-s) var(--terra-l)) 50%, var(--neutro)); }
+.leg.r { background: hsl(205 var(--terra-s) var(--terra-l)); border-color: hsl(205 60% var(--linha-l)); }
+.leg.f { background: transparent; border-style: dashed; }
+
+.ilha { margin-top: 22px; }
+.ilha-topo { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.ilha h2 { margin: 0; font-size: 16px; font-weight: 500; }
+.ilha .cap { font-size: 12px; color: var(--texto-3); white-space: nowrap; }
+.ilha .selo { display: none; margin-left: 6px; padding: 1px 8px; border-radius: 999px; font-size: 11px; background: hsl(var(--h) var(--terra-s) var(--terra-l)); color: var(--texto); vertical-align: 2px; }
+.ilha.conquistada .selo { display: inline-block; }
+.mini { height: 6px; margin: 6px 0 10px; border-radius: 3px; background: var(--borda); overflow: hidden; }
+.mini > div { height: 100%; background: hsl(var(--h) 60% var(--linha-l)); transition: width 0.9s ease; }
+.regioes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 480px) { .regioes { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+.regiao { --d: 0; position: relative; isolation: isolate; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; min-height: 100px; width: 100%; padding: 10px 12px; text-align: left; cursor: pointer;
+  background: color-mix(in srgb, hsl(var(--h) var(--terra-s) var(--terra-l)) calc(var(--d) * 100%), var(--neutro));
+  border: 1.5px solid color-mix(in srgb, hsl(var(--h) 60% var(--linha-l)) calc(var(--d) * 100%), var(--borda));
+  border-radius: 12px; transition: background 0.9s ease, border-color 0.9s ease; }
+.regiao::before { content: ""; position: absolute; inset: 0; z-index: -2; opacity: var(--d); transition: opacity 0.9s ease;
+  background: repeating-radial-gradient(circle at 85% 115%, transparent 0 9px, hsl(var(--h) 60% var(--linha-l) / 0.3) 9px 10px); }
+.nevoa { position: absolute; inset: -12%; z-index: 1; pointer-events: none; opacity: calc(1 - var(--d)); transition: opacity 0.9s ease; animation: deriva 10s ease-in-out infinite alternate;
+  background:
+    radial-gradient(55% 48% at 18% 30%, rgba(var(--nuvem), 0.95), transparent 72%),
+    radial-gradient(48% 58% at 82% 62%, rgba(var(--nuvem), 0.9), transparent 72%),
+    radial-gradient(70% 45% at 46% 92%, rgba(var(--nuvem), 0.9), transparent 72%),
+    rgba(var(--nuvem), 0.5); }
+.arts { position: relative; z-index: 2; font-size: 12px; color: var(--texto-2); }
+.nome { position: relative; font-size: 15px; font-weight: 500; line-height: 1.25; filter: blur(calc((1 - var(--d)) * 4px)); transition: filter 0.9s ease; }
+.rodape { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 500; }
+.rodape .ic { font-size: 16px; color: hsl(var(--h) 60% var(--linha-l)); }
+.regiao.fora { background: transparent; border: 1.5px dashed var(--borda-forte); color: var(--texto-3); cursor: default; }
+.regiao.fora .nome { filter: none; font-weight: 400; }
+.regiao.fora::before { display: none; }
+.regiao.pulsa { animation: pulsa 0.7s ease-in-out 3; }
+.previa { cursor: default; min-height: 84px; margin: 4px 0 12px; }
+
+dialog { width: min(440px, 100%); max-width: 100%; max-height: 92vh; margin: auto auto 0; padding: 18px; overflow: auto; color: var(--texto); background: var(--cartao); border: 0; border-radius: 16px 16px 0 0; }
+@media (min-width: 520px) { dialog { margin: auto; border-radius: 16px; } }
+dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
+dialog h2 { margin: 2px 0 10px; font-size: 20px; font-weight: 500; }
+.dlg-topo { display: flex; justify-content: space-between; align-items: center; }
+.icone { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--texto-2); cursor: pointer; font-size: 18px; }
+.pista { margin-bottom: 12px; font-size: 14px; color: var(--texto-2); }
+.pista summary { cursor: pointer; }
+.pista p { margin: 6px 0 0; padding: 8px 10px; border-radius: 8px; background: var(--superficie); }
+.afirmacao { margin: 0 0 12px; padding: 14px; border-radius: 12px; background: var(--superficie); font-size: 17px; line-height: 1.5; }
+.acoes { display: flex; gap: 8px; margin-top: 10px; }
+.botao { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 46px; padding: 0 16px; font-weight: 500; background: transparent; border: 1px solid var(--borda-forte); border-radius: 10px; cursor: pointer; }
+.botao:active { transform: scale(0.98); }
+.botao.primario { background: var(--texto); border-color: var(--texto); color: var(--cartao); }
+.botao:disabled:not(.certo):not(.errado) { color: var(--texto-3); background: var(--superficie); border-color: var(--borda); cursor: default; transform: none; }
+.botao.certo { background: var(--ok-fundo); border-color: var(--ok-borda); color: var(--ok-texto); }
+.botao.errado { background: var(--erro-fundo); border-color: var(--erro-borda); color: var(--erro-texto); }
+.caixa { margin-top: 10px; padding: 10px 12px; border: 1px solid transparent; border-radius: 10px; font-size: 14px; animation: surgir 0.2s ease-out; }
+.caixa p { margin: 0; }
+.caixa .t { font-weight: 500; margin-bottom: 2px; }
+.caixa.ok { background: var(--ok-fundo); border-color: var(--ok-borda); color: var(--ok-texto); }
+.caixa.erro { background: var(--erro-fundo); border-color: var(--erro-borda); color: var(--erro-texto); }
+.aprendido { margin: 8px 0 0; padding-left: 18px; font-size: 14px; color: var(--texto-2); }
+.aprendido li { margin: 6px 0; }
+
+.aviso { position: fixed; left: 50%; bottom: 16px; z-index: 10; max-width: calc(100% - 32px); padding: 10px 16px; border-radius: 999px; background: var(--texto); color: var(--cartao); font-size: 14px; opacity: 0; transform: translate(-50%, 16px); transition: opacity 0.25s, transform 0.25s; pointer-events: none; }
+.aviso.on { opacity: 1; transform: translate(-50%, 0); }
+
+@keyframes deriva { from { transform: translateX(-5%); } to { transform: translateX(5%); } }
+@keyframes pulsa { 50% { transform: scale(1.04); box-shadow: 0 0 0 4px var(--acento); } }
+@keyframes surgir { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="cabecalho">
+    <p class="ref" id="lei-ref"></p>
+    <h1 id="lei-nome"></h1>
+    <div class="painel">
+      <div class="anel" id="anel" role="img" aria-label="Edital revelado"><div id="anel-pct">0%</div></div>
+      <div class="stats">
+        <strong>Edital revelado</strong>
+        <span id="s-regioes"></span>
+        <span id="s-faltam"></span>
+      </div>
+    </div>
+    <p class="suave" id="edital-obs"></p>
+  </header>
+
+  <div class="ferramentas">
+    <button type="button" class="chip-btn" id="btn-bussola"></button>
+    <button type="button" class="chip-btn" id="btn-fora" aria-pressed="true"></button>
+    <button type="button" class="chip-btn" id="btn-reiniciar"></button>
+  </div>
+  <ul class="legenda" aria-label="Legenda do mapa">
+    <li><i class="leg n"></i>Névoa</li>
+    <li><i class="leg p"></i>Parcial</li>
+    <li><i class="leg r"></i>Revelado</li>
+    <li><i class="leg f"></i>Fora do edital</li>
+  </ul>
+
+  <div id="mapa"></div>
+</main>
+
+<dialog id="dialogo" aria-labelledby="dlg-titulo">
+  <div class="dlg-topo">
+    <p class="ref" id="dlg-ref"></p>
+    <button type="button" class="icone" id="dlg-fechar" aria-label="Fechar"></button>
+  </div>
+  <h2 id="dlg-titulo"></h2>
+  <div id="dlg-previa"></div>
+  <details class="pista"><summary>Ver a pista da região</summary><p id="dlg-pista"></p></details>
+  <div id="dlg-corpo"></div>
+</dialog>
+<div class="aviso" id="aviso" role="status" aria-live="polite"></div>
+
+<!--
+  CONTEÚDO (JSON estático). json-lei: capítulos e regiões do mapa. json-desafios: pista e afirmações de cada região.
+-->
+<script id="json-lei" type="application/json">
+{
+  "lei": { "nome": "Mapa da LGPD", "sigla": "LGPD", "numero": "Lei nº 13.709/2018" },
+  "edital": { "observacao": "Edital de exemplo. Regiões tracejadas ficam fora do edital e não contam no progresso." },
+  "capitulos": [
+    {
+      "id": "c1", "numero": "I", "titulo": "Disposições preliminares", "arts": "arts. 1 a 6", "matiz": 205,
+      "regioes": [
+        { "id": "t1", "nome": "Objeto e fundamentos", "arts": "Arts. 1–2", "inicial": 2 },
+        { "id": "t2", "nome": "Aplicação da lei", "arts": "Arts. 3–4", "inicial": 1 },
+        { "id": "t3", "nome": "Princípios", "arts": "Art. 6º", "inicial": 2 }
+      ]
+    },
+    {
+      "id": "c2", "numero": "II", "titulo": "Tratamento de dados pessoais", "arts": "arts. 7 a 16", "matiz": 165,
+      "regioes": [
+        { "id": "t4", "nome": "Bases legais", "arts": "Art. 7º", "inicial": 2 },
+        { "id": "t5", "nome": "Consentimento", "arts": "Arts. 8–9", "inicial": 1 },
+        { "id": "t6", "nome": "Dados sensíveis", "arts": "Arts. 11–13", "inicial": 0 },
+        { "id": "t7", "nome": "Crianças e adolescentes", "arts": "Art. 14", "inicial": 0 },
+        { "id": "t8", "nome": "Término do tratamento", "arts": "Arts. 15–16", "inicial": 0 }
+      ]
+    },
+    {
+      "id": "c3", "numero": "III", "titulo": "Direitos do titular", "arts": "arts. 17 a 22", "matiz": 285,
+      "regioes": [
+        { "id": "t9", "nome": "Direitos básicos", "arts": "Arts. 17–18", "inicial": 0 },
+        { "id": "t10", "nome": "Acesso e prazos", "arts": "Arts. 19–20", "inicial": 0 }
+      ]
+    },
+    {
+      "id": "c4", "numero": "IV", "titulo": "Tratamento pelo poder público", "arts": "arts. 23 a 32", "matiz": 28,
+      "regioes": [
+        { "id": "t11", "nome": "Regras gerais", "arts": "Art. 23", "inicial": 0 },
+        { "id": "t12", "nome": "Uso compartilhado", "arts": "Arts. 26–27", "inicial": 0 }
+      ]
+    },
+    {
+      "id": "c5", "numero": "V", "titulo": "Transferência internacional", "arts": "arts. 33 a 36", "matiz": 215,
+      "regioes": [
+        { "id": "t20", "nome": "Transferência internacional de dados", "arts": "Arts. 33–36", "foraDoEdital": true }
+      ]
+    },
+    {
+      "id": "c6", "numero": "VI", "titulo": "Agentes de tratamento", "arts": "arts. 37 a 45", "matiz": 130,
+      "regioes": [
+        { "id": "t13", "nome": "Controlador e operador", "arts": "Arts. 37–40", "inicial": 0 },
+        { "id": "t14", "nome": "Encarregado", "arts": "Art. 41", "inicial": 0 },
+        { "id": "t15", "nome": "Responsabilidade", "arts": "Arts. 42–45", "inicial": 0 }
+      ]
+    },
+    {
+      "id": "c7", "numero": "VII", "titulo": "Segurança e boas práticas", "arts": "arts. 46 a 51", "matiz": 42,
+      "regioes": [
+        { "id": "t16", "nome": "Segurança e incidentes", "arts": "Arts. 46–48", "inicial": 0 },
+        { "id": "t17", "nome": "Boas práticas e governança", "arts": "Arts. 50–51", "inicial": 0 }
+      ]
+    },
+    {
+      "id": "c8", "numero": "VIII", "titulo": "Fiscalização", "arts": "arts. 52 a 54", "matiz": 355,
+      "regioes": [
+        { "id": "t18", "nome": "Sanções administrativas", "arts": "Art. 52", "inicial": 0 }
+      ]
+    },
+    {
+      "id": "c9", "numero": "IX", "titulo": "ANPD e Conselho Nacional", "arts": "arts. 55-A a 59", "matiz": 255,
+      "regioes": [
+        { "id": "t19", "nome": "A Autoridade Nacional", "arts": "Art. 55-A", "inicial": 0 }
+      ]
+    },
+    {
+      "id": "c10", "numero": "X", "titulo": "Disposições finais", "arts": "arts. 60 a 65", "matiz": 200,
+      "regioes": [
+        { "id": "t21", "nome": "Disposições finais e transitórias", "arts": "Arts. 60–65", "foraDoEdital": true }
+      ]
+    }
+  ]
+}
+</script>
+
+<script id="json-desafios" type="application/json">
+{
+  "t1": {
+    "pista": "A LGPD protege dados pessoais em qualquer meio, inclusive digital, e vale para o setor privado e para o poder público.",
+    "desafios": [
+      { "certo": true, "afirmacao": "A LGPD dispõe sobre o tratamento de dados pessoais, inclusive nos meios digitais, por pessoa natural ou por pessoa jurídica de direito público ou privado.", "explicacao": "É a regra do art. 1º." },
+      { "certo": false, "afirmacao": "A LGPD se aplica somente ao tratamento de dados realizado por empresas privadas.", "explicacao": "Ela alcança também as pessoas jurídicas de direito público (art. 1º)." }
+    ]
+  },
+  "t2": {
+    "pista": "Vale para operações no Brasil, mesmo com sede no exterior. Não vale para uso particular e não econômico.",
+    "desafios": [
+      { "certo": true, "afirmacao": "A LGPD pode ser aplicada a empresa sediada no exterior, desde que a operação de tratamento seja realizada no território nacional.", "explicacao": "O art. 3º vale independentemente do país da sede, se a operação ocorre no Brasil (inciso I)." },
+      { "certo": false, "afirmacao": "A LGPD se aplica ao tratamento de dados pessoais feito por pessoa natural para fins exclusivamente particulares e não econômicos.", "explicacao": "Esse é um caso de não aplicação (art. 4º, I)." }
+    ]
+  },
+  "t3": {
+    "pista": "Todo tratamento segue a boa-fé e princípios como finalidade, adequação e necessidade (o mínimo de dados).",
+    "desafios": [
+      { "certo": true, "afirmacao": "Pelo princípio da finalidade, o tratamento deve ter propósitos legítimos, específicos, explícitos e informados ao titular, sem tratamento posterior incompatível com essas finalidades.", "explicacao": "É o conceito do art. 6º, I." },
+      { "certo": false, "afirmacao": "Pelo princípio da necessidade, o tratamento deve abranger o máximo de dados possível, para atender a usos futuros.", "explicacao": "A necessidade limita o tratamento ao mínimo necessário (art. 6º, III)." }
+    ]
+  },
+  "t4": {
+    "pista": "O consentimento é uma entre várias bases legais do art. 7º, como obrigação legal, execução de contrato e legítimo interesse.",
+    "desafios": [
+      { "certo": true, "afirmacao": "O tratamento de dados pessoais somente pode ser realizado nas hipóteses previstas no art. 7º, entre as quais está o fornecimento de consentimento pelo titular.", "explicacao": "O consentimento é o inciso I do art. 7º." },
+      { "certo": false, "afirmacao": "O consentimento é a única base legal que autoriza o tratamento de dados pessoais.", "explicacao": "O art. 7º traz várias outras bases legais." }
+    ]
+  },
+  "t5": {
+    "pista": "Consentimento: manifestação livre, informada e inequívoca, revogável a qualquer momento por procedimento gratuito e facilitado.",
+    "desafios": [
+      { "certo": true, "afirmacao": "O consentimento deve ser fornecido por escrito ou por outro meio que demonstre a manifestação de vontade do titular.", "explicacao": "É a regra do caput do art. 8º." },
+      { "certo": false, "afirmacao": "O consentimento é irrevogável depois de fornecido pelo titular.", "explicacao": "Pode ser revogado a qualquer momento, por procedimento gratuito e facilitado (art. 8º, §5º)." }
+    ]
+  },
+  "t6": {
+    "pista": "Dados sensíveis têm bases mais restritas (art. 11). O legítimo interesse não está entre elas.",
+    "desafios": [
+      { "certo": true, "afirmacao": "O tratamento de dado pessoal sensível pode ocorrer, sem consentimento do titular, para o cumprimento de obrigação legal ou regulatória pelo controlador.", "explicacao": "É uma das hipóteses do art. 11, II." },
+      { "certo": false, "afirmacao": "Para dados pessoais sensíveis, a LGPD permite o legítimo interesse do controlador como base legal.", "explicacao": "O legítimo interesse está no art. 7º, não no art. 11." }
+    ]
+  },
+  "t7": {
+    "pista": "Dados de crianças exigem consentimento específico e em destaque de um dos pais ou do responsável legal.",
+    "desafios": [
+      { "certo": true, "afirmacao": "O tratamento de dados pessoais de crianças deve ser realizado com consentimento específico e em destaque dado por pelo menos um dos pais ou pelo responsável legal.", "explicacao": "É a regra do art. 14, §1º." },
+      { "certo": false, "afirmacao": "O tratamento de dados pessoais de crianças dispensa o consentimento dos pais em qualquer hipótese.", "explicacao": "A regra é o consentimento. As exceções são pontuais (art. 14, §3º)." }
+    ]
+  },
+  "t8": {
+    "pista": "O tratamento termina, por exemplo, quando a finalidade é alcançada. Depois, os dados são eliminados, com as exceções do art. 16.",
+    "desafios": [
+      { "certo": true, "afirmacao": "O término do tratamento ocorre quando a finalidade é alcançada ou os dados deixam de ser necessários ou pertinentes ao alcance da finalidade específica.", "explicacao": "É a hipótese do art. 15, I." },
+      { "certo": false, "afirmacao": "Após o término do tratamento, os dados devem ser sempre eliminados, sem exceções.", "explicacao": "O art. 16 autoriza a conservação em casos como o cumprimento de obrigação legal." }
+    ]
+  },
+  "t9": {
+    "pista": "O titular pode confirmar o tratamento, acessar, corrigir, pedir eliminação e portabilidade, entre outros direitos do art. 18.",
+    "desafios": [
+      { "certo": true, "afirmacao": "O titular tem direito a obter do controlador, mediante requisição, a confirmação da existência de tratamento de seus dados.", "explicacao": "É o direito do art. 18, I." },
+      { "certo": false, "afirmacao": "O titular não tem direito à portabilidade dos dados a outro fornecedor de serviço ou produto.", "explicacao": "A portabilidade é direito do titular (art. 18, V)." }
+    ]
+  },
+  "t10": {
+    "pista": "Resposta imediata em formato simplificado, ou declaração clara e completa em até 15 dias (art. 19).",
+    "desafios": [
+      { "certo": true, "afirmacao": "A declaração clara e completa sobre o tratamento deve ser fornecida em até 15 dias, contados da data do requerimento do titular.", "explicacao": "É o prazo do art. 19, II." },
+      { "certo": false, "afirmacao": "A declaração clara e completa pode ser fornecida em até 30 dias após o requerimento do titular.", "explicacao": "O prazo legal é de até 15 dias (art. 19, II)." }
+    ]
+  },
+  "t11": {
+    "pista": "O poder público trata dados para finalidade pública e deve informar as hipóteses em que realiza o tratamento (art. 23).",
+    "desafios": [
+      { "certo": true, "afirmacao": "O tratamento de dados pelas pessoas jurídicas de direito público deve atender à sua finalidade pública, na persecução do interesse público.", "explicacao": "É a regra do caput do art. 23." },
+      { "certo": false, "afirmacao": "As pessoas jurídicas de direito público não precisam informar as hipóteses em que realizam o tratamento de dados pessoais.", "explicacao": "Devem informar, em veículos de fácil acesso (art. 23, I)." }
+    ]
+  },
+  "t12": {
+    "pista": "Transferir dados a entidades privadas é vedado, com exceções. O uso compartilhado depende de consentimento, salvo exceções (arts. 26 e 27).",
+    "desafios": [
+      { "certo": true, "afirmacao": "É vedado ao poder público transferir a entidades privadas dados pessoais de bases a que tenha acesso, ressalvadas as exceções previstas na lei.", "explicacao": "É a regra do art. 26, §1º." },
+      { "certo": false, "afirmacao": "O uso compartilhado de dados pessoais do poder público com pessoa de direito privado depende sempre de consentimento do titular, sem exceções.", "explicacao": "O art. 27 prevê exceções, como as hipóteses de dispensa de consentimento." }
+    ]
+  },
+  "t13": {
+    "pista": "O controlador decide. O operador executa o tratamento em nome do controlador.",
+    "desafios": [
+      { "certo": true, "afirmacao": "Controlador é a pessoa, de direito público ou privado, a quem competem as decisões referentes ao tratamento de dados pessoais.", "explicacao": "É a definição do art. 5º, VI." },
+      { "certo": false, "afirmacao": "Operador é quem toma as decisões referentes ao tratamento de dados pessoais.", "explicacao": "Quem decide é o controlador. O operador trata dados em nome dele (art. 5º, VII)." }
+    ]
+  },
+  "t14": {
+    "pista": "O encarregado é o canal de comunicação entre o controlador, os titulares e a ANPD.",
+    "desafios": [
+      { "certo": true, "afirmacao": "O controlador deverá indicar encarregado pelo tratamento de dados pessoais.", "explicacao": "É a regra do caput do art. 41." },
+      { "certo": false, "afirmacao": "O encarregado é o responsável por aplicar as sanções administrativas previstas na LGPD.", "explicacao": "As sanções são aplicadas pela ANPD (art. 52)." }
+    ]
+  },
+  "t15": {
+    "pista": "Controlador e operador respondem por danos. O operador responde solidariamente se descumprir a lei ou as instruções lícitas do controlador.",
+    "desafios": [
+      { "certo": true, "afirmacao": "O controlador ou o operador que, ao tratar dados pessoais, causar dano a outrem em violação à legislação de proteção de dados é obrigado a repará-lo.", "explicacao": "É a regra do art. 42." },
+      { "certo": false, "afirmacao": "O operador nunca responde pelos danos causados pelo tratamento, pois quem decide é o controlador.", "explicacao": "O operador responde solidariamente quando descumpre a lei ou as instruções lícitas do controlador (art. 42, §1º, I)." }
+    ]
+  },
+  "t16": {
+    "pista": "Medidas de segurança e comunicação de incidentes relevantes à ANPD e ao titular (arts. 46 e 48).",
+    "desafios": [
+      { "certo": true, "afirmacao": "Os agentes de tratamento devem adotar medidas de segurança, técnicas e administrativas, aptas a proteger os dados pessoais de acessos não autorizados e de situações ilícitas de perda, alteração ou difusão.", "explicacao": "É o dever do art. 46." },
+      { "certo": false, "afirmacao": "O controlador não precisa comunicar ao titular um incidente de segurança que possa acarretar risco ou dano relevante.", "explicacao": "A comunicação à ANPD e ao titular é obrigatória nesse caso (art. 48)." }
+    ]
+  },
+  "t17": {
+    "pista": "Regras de boas práticas e governança são facultativas e complementam as medidas de segurança (art. 50).",
+    "desafios": [
+      { "certo": true, "afirmacao": "Controladores e operadores podem formular regras de boas práticas e de governança.", "explicacao": "O art. 50 usa o verbo \"poderão\": é uma faculdade." },
+      { "certo": false, "afirmacao": "A formulação de regras de boas práticas é obrigatória e substitui o dever de adotar medidas de segurança.", "explicacao": "É facultativa e não substitui as medidas de segurança." }
+    ]
+  },
+  "t18": {
+    "pista": "A ANPD aplica advertência, multa simples (até 2% do faturamento, limitada a R$ 50 milhões por infração), entre outras sanções (art. 52).",
+    "desafios": [
+      { "certo": true, "afirmacao": "A multa simples pode chegar a 2% do faturamento da pessoa jurídica de direito privado no último exercício, limitada a R$ 50 milhões por infração.", "explicacao": "É o limite do art. 52, II." },
+      { "certo": false, "afirmacao": "A multa simples prevista na LGPD é limitada a R$ 5 milhões por infração.", "explicacao": "O limite é de R$ 50 milhões por infração (art. 52, II)." }
+    ]
+  },
+  "t19": {
+    "pista": "A ANPD é autarquia de natureza especial, com autonomia técnica e decisória (art. 55-A).",
+    "desafios": [
+      { "certo": true, "afirmacao": "A ANPD é autarquia de natureza especial, dotada de autonomia técnica e decisória.", "explicacao": "É a redação atual do art. 55-A." },
+      { "certo": false, "afirmacao": "A ANPD é órgão integrante da Presidência da República, sem personalidade jurídica própria.", "explicacao": "Esse era o desenho original. Hoje ela é autarquia de natureza especial (Lei 14.460/2022)." }
+    ]
+  }
+}
+</script>
+
+<script>
+(() => {
+  'use strict';
+
+  const $ = (id) => document.getElementById(id);
+  const LEI = JSON.parse($('json-lei').textContent);
+  const DES = JSON.parse($('json-desafios').textContent);
+  const CHAVE = `mapa-revelado:${LEI.lei.sigla}`;
+
+  // ---------- ícones e helper de DOM ----------
+  const ICONES = {
+    x: ['M18 6 6 18M6 6l12 12'],
+    check: ['M20 6 9 17l-5-5'],
+    compass: ['M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z', 'M16.24 7.76l-2.12 6.36-6.36 2.12 2.12-6.36z'],
+    refresh: ['M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8', 'M3 3v5h5'],
+    eye: ['M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z', 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z']
+  };
+  const NS = 'http://www.w3.org/2000/svg';
+  function icone(nome) {
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('class', 'ic');
+    ICONES[nome].forEach((d) => {
+      const p = document.createElementNS(NS, 'path');
+      p.setAttribute('d', d);
+      svg.append(p);
+    });
+    return svg;
+  }
+  function h(tag, attrs, ...filhos) {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v == null || v === false) continue;
+      if (k === 'class') n.className = v;
+      else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, v === true ? '' : v);
+    }
+    n.append(...filhos.flat(Infinity).filter((f) => f != null && f !== false));
+    return n;
+  }
+
+  // ---------- dados e estado ----------
+  const regioes = LEI.capitulos.flatMap((c) => c.regioes.map((r) => ({ ...r, cap: c })));
+  const doEdital = regioes.filter((r) => !r.foraDoEdital);
+  const total = (r) => (DES[r.id] ? DES[r.id].desafios.length : 0);
+  const iniciais = () => Object.fromEntries(regioes.map((r) => [r.id, Array.from({ length: Math.min(r.inicial || 0, total(r)) }, (_, i) => i)]));
+
+  function carregar() {
+    const base = iniciais();
+    try {
+      const salvo = JSON.parse(localStorage.getItem(CHAVE) || 'null');
+      if (salvo && typeof salvo === 'object') {
+        regioes.forEach((r) => {
+          if (Array.isArray(salvo[r.id])) base[r.id] = [...new Set(salvo[r.id].filter((i) => Number.isInteger(i) && i >= 0 && i < total(r)))];
+        });
+      }
+    } catch (e) { /* sem armazenamento: segue com o estado inicial */ }
+    return base;
+  }
+  const salvar = () => { try { localStorage.setItem(CHAVE, JSON.stringify(estado)); } catch (e) { /* ignora */ } };
+  let estado = carregar();
+
+  const dominio = (r) => (total(r) ? estado[r.id].length / total(r) : 0);
+  const capConquistada = (c) => {
+    const rs = doEdital.filter((r) => r.cap.id === c.id && total(r));
+    return rs.length > 0 && rs.every((r) => dominio(r) === 1);
+  };
+  const reveladas = () => doEdital.filter((r) => total(r) && dominio(r) === 1);
+  const progressoGeral = () => {
+    const tot = doEdital.reduce((s, r) => s + total(r), 0);
+    const feitos = doEdital.reduce((s, r) => s + estado[r.id].length, 0);
+    return { tot, feitos, p: tot ? feitos / tot : 0 };
+  };
+
+  // ---------- avisos ----------
+  const dialogo = $('dialogo');
+  const avisos = [];
+  let mostrandoAviso = false;
+  function fluxoAvisos() {
+    if (mostrandoAviso || !avisos.length) return;
+    mostrandoAviso = true;
+    const a = $('aviso');
+    a.textContent = avisos.shift();
+    a.classList.add('on');
+    setTimeout(() => {
+      a.classList.remove('on');
+      setTimeout(() => { mostrandoAviso = false; fluxoAvisos(); }, 300);
+    }, 2400);
+  }
+  function avisar(msg) { avisos.push(msg); if (!dialogo.open) fluxoAvisos(); }
+
+  // ---------- regiões e mapa ----------
+  function aplicar(el, r) {
+    if (r.foraDoEdital) return;
+    const d = dominio(r);
+    const pct = Math.round(d * 100);
+    el.style.setProperty('--d', d);
+    el.classList.toggle('completa', d === 1);
+    el.querySelector('.pct').textContent = `${pct}%`;
+    el.querySelector('.marca').replaceChildren(...(d === 1 ? [icone('check')] : []));
+    if (el.tagName === 'BUTTON') el.setAttribute('aria-label', `${r.nome}, ${r.arts}, ${pct}% revelado`);
+  }
+
+  function criarRegiao(r, interativa) {
+    const el = h(interativa ? 'button' : 'div', { class: `regiao${r.foraDoEdital ? ' fora' : ''}`, style: `--h:${r.cap.matiz}`, type: interativa ? 'button' : null, 'data-id': r.id },
+      h('span', { class: 'arts' }, r.arts),
+      h('span', { class: 'nome' }, r.nome),
+      h('span', { class: 'rodape' }, r.foraDoEdital ? h('span', null, 'Fora do edital') : [h('span', { class: 'pct' }), h('span', { class: 'marca' })]),
+      !r.foraDoEdital && h('i', { class: 'nevoa', 'aria-hidden': 'true' }));
+    if (r.foraDoEdital && interativa) el.setAttribute('aria-label', `${r.nome}, ${r.arts}, fora do edital`);
+    if (interativa) el.addEventListener('click', () => (r.foraDoEdital ? avisar('Fora do edital: esta região não conta no seu progresso.') : abrir(r)));
+    aplicar(el, r);
+    return el;
+  }
+
+  const nos = [], ilhas = [];
+  function construir() {
+    $('mapa').replaceChildren(...LEI.capitulos.map((c) => {
+      const lista = h('div', { class: 'regioes' });
+      const barra = h('div', { style: 'width:0%' });
+      const mini = h('div', { class: 'mini' }, barra);
+      const ilha = h('section', { class: 'ilha', style: `--h:${c.matiz}` },
+        h('div', { class: 'ilha-topo' }, h('h2', null, `Cap. ${c.numero} · ${c.titulo}`, h('span', { class: 'selo' }, 'conquistada')), h('span', { class: 'cap' }, c.arts)),
+        mini, lista);
+      c.regioes.forEach((reg) => {
+        const r = regioes.find((x) => x.id === reg.id);
+        const el = criarRegiao(r, true);
+        nos.push({ r, el });
+        lista.append(el);
+      });
+      const soFora = c.regioes.every((x) => x.foraDoEdital);
+      mini.hidden = soFora;
+      ilhas.push({ c, ilha, barra, soFora });
+      return ilha;
+    }));
+  }
+
+  function atualizar() {
+    nos.forEach(({ r, el }) => aplicar(el, r));
+    ilhas.forEach(({ c, ilha, barra, soFora }) => {
+      if (soFora) return;
+      const rs = doEdital.filter((r) => r.cap.id === c.id);
+      const tot = rs.reduce((s, r) => s + total(r), 0);
+      const feitos = rs.reduce((s, r) => s + estado[r.id].length, 0);
+      barra.style.width = `${tot ? (feitos / tot) * 100 : 0}%`;
+      ilha.classList.toggle('conquistada', capConquistada(c));
+    });
+    const { tot, feitos, p } = progressoGeral();
+    const pct = Math.round(p * 100);
+    $('anel').style.setProperty('--p', pct);
+    $('anel').setAttribute('aria-label', `Edital revelado: ${pct}%`);
+    $('anel-pct').textContent = `${pct}%`;
+    $('s-regioes').textContent = `${reveladas().length} de ${doEdital.length} regiões reveladas`;
+    $('s-faltam').textContent = feitos >= tot ? 'Névoa dissipada' : `Faltam ${tot - feitos} desafios para limpar o mapa`;
+    salvar();
+  }
+
+  let mostrarFora = true;
+  function aplicarFiltro() {
+    $('btn-fora').setAttribute('aria-pressed', String(mostrarFora));
+    nos.forEach(({ r, el }) => { if (r.foraDoEdital) el.hidden = !mostrarFora; });
+    ilhas.forEach(({ ilha, soFora }) => { if (soFora) ilha.hidden = !mostrarFora; });
+  }
+
+  // ---------- janela de desafios ----------
+  let atual = null, fila = [], previa = null, mudou = false;
+
+  function abrir(r) {
+    if (!DES[r.id]) { avisar('Esta região ainda não tem desafios.'); return; }
+    atual = r;
+    mudou = false;
+    fila = DES[r.id].desafios.map((_, i) => i).filter((i) => !estado[r.id].includes(i));
+    $('dlg-ref').textContent = `Cap. ${r.cap.numero} · ${r.arts}`;
+    $('dlg-titulo').textContent = r.nome;
+    previa = criarRegiao(r, false);
+    previa.classList.add('previa');
+    $('dlg-previa').replaceChildren(previa);
+    $('dlg-pista').textContent = DES[r.id].pista;
+    dialogo.querySelector('details').open = false;
+    mostrar();
+    dialogo.showModal();
+  }
+
+  function conferirConquistas(antes) {
+    reveladas().filter((r) => !antes.regioes.has(r.id)).forEach((r) => avisar(`Região revelada: ${r.nome}`));
+    LEI.capitulos.filter((c) => capConquistada(c) && !antes.caps.has(c.id)).forEach((c) => avisar(`Ilha conquistada: ${c.titulo}`));
+    if (progressoGeral().p === 1 && !antes.tudo) avisar('Mapa do edital completo!');
+  }
+
+  function mostrar() {
+    const corpo = $('dlg-corpo');
+    if (!fila.length) {
+      corpo.replaceChildren(
+        h('div', { class: 'caixa ok' }, h('p', { class: 't' }, 'Região revelada'), h('p', null, 'Você dominou esta região. O que você revelou:')),
+        h('ul', { class: 'aprendido' }, DES[atual.id].desafios.map((d) => h('li', null, d.explicacao))),
+        h('div', { class: 'acoes' }, h('button', { type: 'button', class: 'botao primario', onclick: () => dialogo.close() }, 'Voltar ao mapa')));
+      return;
+    }
+    const d = DES[atual.id].desafios[fila[0]];
+    let travado = false;
+    const feedback = h('div', { role: 'status' });
+    const proximo = h('div', { class: 'acoes' });
+    const btnC = h('button', { type: 'button', class: 'botao', onclick: () => responder(true) }, 'Certo');
+    const btnE = h('button', { type: 'button', class: 'botao', onclick: () => responder(false) }, 'Errado');
+
+    function responder(resp) {
+      if (travado) return;
+      travado = true;
+      const acertou = resp === d.certo;
+      const antes = { regioes: new Set(reveladas().map((r) => r.id)), caps: new Set(LEI.capitulos.filter(capConquistada).map((c) => c.id)), tudo: progressoGeral().p === 1 };
+      (resp ? btnC : btnE).classList.add(acertou ? 'certo' : 'errado');
+      btnC.disabled = true;
+      btnE.disabled = true;
+      if (acertou) {
+        estado[atual.id].push(fila.shift());
+        mudou = true;
+        atualizar();
+        aplicar(previa, atual);
+        conferirConquistas(antes);
+      } else {
+        fila.push(fila.shift());
+      }
+      feedback.replaceChildren(h('div', { class: `caixa ${acertou ? 'ok' : 'erro'}` },
+        h('p', { class: 't' }, acertou ? 'Certo! A névoa recuou.' : `Era ${d.certo ? 'Certo' : 'Errado'}.`),
+        h('p', null, d.explicacao)));
+      const rotulo = !fila.length ? 'Concluir região' : acertou ? 'Próximo desafio' : (fila.length > 1 ? 'Tentar outro desafio' : 'Tentar de novo');
+      const bt = h('button', { type: 'button', class: 'botao primario', onclick: mostrar }, rotulo);
+      proximo.replaceChildren(bt);
+      bt.focus({ preventScroll: true });
+    }
+
+    corpo.replaceChildren(
+      h('p', { class: 'ref', style: 'margin-bottom:6px' }, `Desafio ${estado[atual.id].length + 1} de ${total(atual)} · Certo ou Errado`),
+      h('p', { class: 'afirmacao' }, d.afirmacao),
+      h('div', { class: 'acoes' }, btnE, btnC),
+      feedback, proximo);
+  }
+
+  dialogo.addEventListener('close', () => {
+    fluxoAvisos();
+    if (atual && mudou) {
+      const no = nos.find((n) => n.r.id === atual.id).el;
+      no.classList.remove('pulsa');
+      void no.offsetWidth;
+      no.classList.add('pulsa');
+      setTimeout(() => no.classList.remove('pulsa'), 2300);
+    }
+  });
+  dialogo.addEventListener('click', (e) => {
+    const b = dialogo.getBoundingClientRect();
+    if (e.clientX < b.left || e.clientX > b.right || e.clientY < b.top || e.clientY > b.bottom) dialogo.close();
+  });
+
+  // ---------- ferramentas ----------
+  function bussola() {
+    const alvo = doEdital.filter((r) => total(r) && dominio(r) < 1).sort((a, b) => dominio(a) - dominio(b))[0];
+    if (!alvo) { avisar('Todo o edital está revelado.'); return; }
+    const no = nos.find((n) => n.r.id === alvo.id).el;
+    no.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    no.classList.remove('pulsa');
+    void no.offsetWidth;
+    no.classList.add('pulsa');
+    setTimeout(() => no.classList.remove('pulsa'), 2300);
+    avisar(`Próximo destino: ${alvo.nome} (${alvo.arts})`);
+  }
+
+  $('lei-ref').textContent = LEI.lei.numero;
+  $('lei-nome').textContent = LEI.lei.nome;
+  $('edital-obs').textContent = LEI.edital.observacao;
+  $('dlg-fechar').append(icone('x'));
+  $('dlg-fechar').addEventListener('click', () => dialogo.close());
+  $('btn-bussola').append(icone('compass'), 'Próximo destino');
+  $('btn-fora').append(icone('eye'), 'Fora do edital');
+  $('btn-reiniciar').append(icone('refresh'), 'Reiniciar');
+  $('btn-bussola').addEventListener('click', bussola);
+  $('btn-fora').addEventListener('click', () => { mostrarFora = !mostrarFora; aplicarFiltro(); });
+  $('btn-reiniciar').addEventListener('click', () => {
+    if (!confirm('Reiniciar o mapa? O progresso salvo neste navegador será perdido.')) return;
+    estado = iniciais();
+    atualizar();
+    avisar('Mapa reiniciado.');
+  });
+
+  construir();
+  aplicarFiltro();
+  atualizar();
+})();
+</script>
+</body>
+</html>
