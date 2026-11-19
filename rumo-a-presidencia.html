@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rumo à Presidência · Regimento Interno</title>
+<style>
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+:root {
+  color-scheme: light dark;
+  --fundo: #f6f3ea; --cartao: #fffdf8; --superficie: #efebdf;
+  --texto: #1d2a24; --texto-2: #56635c; --texto-3: #66726b;
+  --borda: rgba(29, 42, 36, 0.16); --borda-forte: rgba(29, 42, 36, 0.34);
+  --verde: #1f5c45; --on-verde: #ffffff; --verde-fundo: #dfeee6; --verde-texto: #14402f;
+  --ouro: #c99a2e; --ouro-fundo: #f6e8c6; --ouro-texto: #5e4009;
+  --erro-fundo: #fbe9e7; --erro-borda: #e5a29b; --erro-texto: #7a2119;
+  --serif: Georgia, "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fundo: #121b17; --cartao: #1a2721; --superficie: #223229;
+    --texto: #e8efe9; --texto-2: #aebbb3; --texto-3: #93a199;
+    --borda: rgba(255, 255, 255, 0.16); --borda-forte: rgba(255, 255, 255, 0.34);
+    --verde: #6fd3a8; --on-verde: #0e2a1f; --verde-fundo: #1f4435; --verde-texto: #bfeedb;
+    --ouro: #e0b45a; --ouro-fundo: #4a3a14; --ouro-texto: #f3d994;
+    --erro-fundo: #4a1d19; --erro-borda: #a8463d; --erro-texto: #f6c9c4;
+  }
+}
+
+body { margin: 0; background: var(--fundo); color: var(--texto); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+button { font: inherit; color: inherit; }
+button:focus-visible, #palco:focus-visible { outline: 2px solid var(--verde); outline-offset: 2px; }
+#palco:focus, h1:focus, h2:focus { outline: none; }
+.app { max-width: 480px; margin: 0 auto; padding: 16px 16px 40px; }
+.ic { width: 1.2em; height: 1.2em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ref { margin: 0; font-size: 12px; color: var(--texto-3); }
+.suave { margin: 0; font-size: 14px; color: var(--texto-2); }
+.aviso-fonte { margin: 24px 0 0; font-size: 12px; color: var(--texto-3); }
+
+.topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.marca { display: flex; align-items: center; gap: 8px; font-family: var(--serif); font-size: 17px; }
+.martelo { width: 12px; height: 12px; border-radius: 3px; background: var(--ouro); transform: rotate(45deg); }
+.icone { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--texto-2); cursor: pointer; font-size: 18px; }
+
+.trilha { display: flex; margin: 0 0 14px; padding: 0; list-style: none; }
+.trilha li { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; color: var(--texto-2); text-align: center; }
+.trilha li::before { content: ""; position: absolute; top: 17px; left: -50%; width: 100%; height: 3px; background: var(--borda-forte); }
+.trilha li:first-child::before { display: none; }
+.trilha li.feito::before, .trilha li.atual::before { background: var(--verde); }
+.no { position: relative; z-index: 1; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--cartao); border: 2px solid var(--borda-forte); font-weight: 500; font-size: 14px; }
+.trilha li.feito .no { background: var(--verde); border-color: var(--verde); color: var(--on-verde); }
+.trilha li.atual .no { border-color: var(--verde); color: var(--verde); }
+.trilha li.atual { color: var(--texto); font-weight: 500; }
+
+.urna { margin-bottom: 16px; }
+.urna-topo { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--texto-2); }
+.urna-topo b { font-weight: 500; color: var(--texto); }
+.medidor { position: relative; height: 12px; border-radius: 6px; background: var(--borda); }
+.enche { height: 100%; width: 0; border-radius: 6px; background: var(--ouro); transition: width 0.6s ease, background 0.3s; }
+.urna.maioria .enche { background: var(--verde); }
+.tick { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--texto); }
+
+.cartao { padding: 16px; background: var(--cartao); border: 1px solid var(--borda); border-radius: 14px; }
+.cartao h2 { margin: 2px 0 6px; font-family: var(--serif); font-size: 22px; font-weight: 400; line-height: 1.25; }
+.cena { margin: 8px 0 0; font-family: var(--serif); font-size: 17px; line-height: 1.55; }
+.chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; background: var(--ouro-fundo); color: var(--ouro-texto); font-size: 12px; white-space: nowrap; }
+.chip.verde { background: var(--verde-fundo); color: var(--verde-texto); }
+.linha-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+
+.hero { padding: 20px; border-radius: 16px; background: var(--verde); color: var(--on-verde); }
+.hero h1 { margin: 0 0 4px; font-family: var(--serif); font-size: 28px; font-weight: 400; line-height: 1.15; }
+.hero p { margin: 0; font-size: 14px; }
+.regras { margin: 14px 0 0; padding-left: 20px; font-size: 14px; }
+.regras li { margin: 4px 0; }
+.titulo-secao { margin: 20px 0 4px; font-size: 13px; font-weight: 500; color: var(--texto-2); }
+.item-cap { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--borda); font-size: 15px; }
+.item-cap:first-of-type { border-top: 0; }
+.item-cap .n { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--verde-fundo); color: var(--verde-texto); font-weight: 500; font-size: 14px; }
+.item-cap small { display: block; color: var(--texto-2); font-size: 13px; }
+
+.acoes { display: flex; gap: 8px; margin-top: 12px; }
+.botao { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; padding: 0 16px; font-weight: 500; background: transparent; border: 1px solid var(--borda-forte); border-radius: 12px; cursor: pointer; }
+.botao:active { transform: scale(0.98); }
+.botao.primario { background: var(--verde); border-color: var(--verde); color: var(--on-verde); }
+.hero .botao { background: var(--on-verde); border-color: var(--on-verde); color: var(--verde); margin-top: 16px; }
+
+.enunciado { margin: 0 0 12px; font-size: 16px; font-weight: 500; }
+.frase { margin: 0 0 14px; font-family: var(--serif); font-size: 19px; line-height: 1.75; }
+.vazio { display: inline-block; min-width: 7ch; margin: 0 3px; padding: 0 8px; border-bottom: 2px dashed var(--borda-forte); border-radius: 4px; text-align: center; transition: background 0.3s; }
+.vazio.cheio { background: var(--verde-fundo); border-bottom: 2px solid var(--verde); color: var(--verde-texto); font-weight: 500; }
+.opcoes { display: grid; gap: 8px; }
+.opcao, .passo { width: 100%; padding: 12px 14px; text-align: left; font-size: 15px; line-height: 1.4; background: var(--cartao); border: 1px solid var(--borda-forte); border-radius: 12px; cursor: pointer; }
+.opcao { text-align: center; font-size: 16px; }
+@media (hover: hover) { .opcao:not(:disabled):hover, .passo:hover, .par-item:not(:disabled):hover { background: var(--superficie); } }
+.opcao:disabled { color: var(--texto-3); background: var(--superficie); border-color: var(--borda); cursor: default; }
+.opcao.certo { background: var(--verde-fundo); border-color: var(--verde); color: var(--verde-texto); font-weight: 500; }
+.opcao.errado { background: var(--erro-fundo); border-color: var(--erro-borda); color: var(--erro-texto); animation: tremer 0.25s; }
+
+.passos { display: grid; gap: 8px; margin-top: 12px; }
+.passo.treme, .par-item.treme { animation: tremer 0.25s; border-color: var(--erro-borda); }
+.sequencia { margin: 0; padding: 0; list-style: none; counter-reset: n; }
+.sequencia li { counter-increment: n; display: flex; align-items: center; gap: 10px; margin-bottom: 6px; padding: 10px 12px; background: var(--verde-fundo); border: 1px solid var(--verde); border-radius: 10px; color: var(--verde-texto); font-size: 15px; line-height: 1.35; animation: surgir 0.2s ease-out; }
+.sequencia li::before { content: counter(n); display: grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--verde); color: var(--on-verde); font-size: 12px; font-weight: 500; }
+.sequencia:empty { display: grid; place-items: center; min-height: 48px; border: 1px dashed var(--borda-forte); border-radius: 10px; }
+.sequencia:empty::after { content: "Sua sequência aparece aqui"; font-size: 13px; color: var(--texto-3); }
+
+.pares { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.coluna { display: grid; align-content: start; gap: 8px; }
+.par-item { padding: 10px; text-align: left; font-size: 14px; line-height: 1.35; background: var(--cartao); border: 1px solid var(--borda-forte); border-radius: 10px; cursor: pointer; }
+.par-item.termo { font-weight: 500; }
+.par-item.sel { border-color: var(--verde); box-shadow: 0 0 0 2px var(--verde); }
+.par-item.certo { background: var(--verde-fundo); border-color: var(--verde); color: var(--verde-texto); }
+.par-item:disabled { cursor: default; }
+
+.voto { display: flex; flex-direction: column; gap: 2px; margin-top: 14px; padding: 10px 12px; border-radius: 10px; font-size: 14px; animation: surgir 0.2s ease-out; }
+.voto strong { font-weight: 500; }
+.voto.ok { background: var(--verde-fundo); color: var(--verde-texto); }
+.voto.no { background: var(--ouro-fundo); color: var(--ouro-texto); }
+.citacao { margin: 12px 0 0; padding: 10px 12px; border-left: 3px solid var(--ouro); background: var(--superficie); font-family: var(--serif); font-size: 15px; line-height: 1.55; }
+.citacao .fonte { display: block; margin-bottom: 4px; font: 12px/1.3 system-ui, sans-serif; color: var(--texto-3); }
+
+.apuracao { text-align: center; }
+.apuracao h2 { font-size: 24px; }
+.numeros { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 14px 0; text-align: left; }
+.numero { padding: 12px; border-radius: 10px; background: var(--superficie); }
+.numero span { display: block; font-size: 13px; color: var(--texto-2); }
+.numero b { font-size: 24px; font-weight: 500; }
+.resumo { margin: 0; padding: 0; list-style: none; text-align: left; }
+.resumo li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 9px 0; border-top: 1px solid var(--borda); font-size: 14px; }
+.status { padding: 2px 10px; border-radius: 999px; font-size: 12px; white-space: nowrap; }
+.status.bom { background: var(--verde-fundo); color: var(--verde-texto); }
+.status.meio { background: var(--ouro-fundo); color: var(--ouro-texto); }
+.status.ruim { background: var(--erro-fundo); color: var(--erro-texto); }
+
+@keyframes tremer { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+@keyframes surgir { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="topo">
+    <div class="marca"><span class="martelo" aria-hidden="true"></span><span id="marca-txt"></span></div>
+    <button type="button" class="icone" id="btn-sair" aria-label="Recomeçar o jogo"></button>
+  </header>
+  <ol class="trilha" id="trilha" aria-label="Trilha do jogo"></ol>
+  <div class="urna" id="urna"></div>
+  <section id="palco" tabindex="-1" aria-label="Tela do jogo"></section>
+  <p class="aviso-fonte" id="aviso-fonte"></p>
+</main>
+
+<!--
+  CONTEÚDO (JSON estático). json-jogo: textos e regras do jogo. json-cap1, json-cap2, json-cap3: um capítulo do regimento em cada bloco.
+-->
+<script id="json-jogo" type="application/json">
+{
+  "titulo": "Rumo à Presidência",
+  "subtitulo": "Posse e eleição da Mesa Diretora",
+  "documento": "Regimento Interno da Câmara Municipal de Mossoró/RN, Resolução nº 25, de 19 de dezembro de 2025",
+  "aviso": "Material de estudo não oficial. Confira sempre o texto oficial do regimento.",
+  "capitulos": ["json-cap1", "json-cap2", "json-cap3"],
+  "rotulosTrilha": ["A Casa", "A posse", "A Mesa"],
+  "regras": [
+    "Cada desafio vale um voto se você acertar de primeira.",
+    "Para ser eleito(a) Presidente, você precisa da maioria simples dos votos.",
+    "Sem a maioria, vem o segundo escrutínio: você refaz só os desafios que errou."
+  ],
+  "titulos": {
+    "unanimidade": "Eleito(a) por unanimidade",
+    "maioria": "Eleito(a) por maioria simples",
+    "semMaioria": "Sem maioria, vai a segundo escrutínio"
+  }
+}
+</script>
+
+<script id="json-cap1" type="application/json">
+{
+  "id": "cap1",
+  "numero": "Título I · Capítulo I",
+  "titulo": "Das Funções da Câmara Municipal",
+  "arts": "Arts. 1º a 3º",
+  "paginas": "pp. 12 e 13",
+  "cena": "Você acaba de ser eleito(a) Vereador(a). Antes da posse, conheça a Casa onde vai trabalhar.",
+  "desafios": [
+    {
+      "id": "c1d1", "tipo": "lacuna", "enunciado": "Complete o Art. 1º.",
+      "texto": "A Câmara Municipal é o órgão legislativo e ___ do Município e tem sua sede nesta cidade de Mossoró, Rio Grande do Norte.",
+      "opcoes": ["fiscalizador", "executivo", "julgador"], "correta": "fiscalizador",
+      "fonte": "Art. 1º",
+      "trecho": "A Câmara Municipal é o órgão legislativo e fiscalizador do Município e tem sua sede nesta cidade de Mossoró, Rio Grande do Norte."
+    },
+    {
+      "id": "c1d2", "tipo": "lacuna", "enunciado": "Complete o Art. 2º.",
+      "texto": "A Câmara Municipal compõe-se de Vereadores eleitos pelo sistema ___, como representantes do povo, tendo mandato de quatro anos.",
+      "opcoes": ["proporcional", "majoritário", "distrital"], "correta": "proporcional",
+      "fonte": "Art. 2º, caput",
+      "trecho": "A Câmara Municipal compõe-se de Vereadores eleitos pelo sistema proporcional, como representantes do povo, tendo mandato de quatro anos."
+    },
+    {
+      "id": "c1d3", "tipo": "lacuna", "enunciado": "Condição de elegibilidade para o mandato de Vereador.",
+      "texto": "Entre as condições de elegibilidade está a idade mínima de ___ anos.",
+      "opcoes": ["dezesseis", "dezoito", "vinte e um"], "correta": "dezoito",
+      "fonte": "Art. 2º, §1º, VI",
+      "trecho": "São condições de elegibilidade para o exercício do mandato de Vereador, na forma da lei federal: [...] VI - a idade mínima de dezoito anos;"
+    },
+    {
+      "id": "c1d4", "tipo": "pareamento", "enunciado": "Ligue cada função da Câmara ao que ela significa.",
+      "pares": [
+        { "termo": "Função legislativa", "definicao": "Deliberar por emendas à Lei Orgânica, leis, medidas provisórias, decretos legislativos e resoluções" },
+        { "termo": "Função de fiscalização", "definicao": "Contábil, financeira, orçamentária e patrimonial, com o auxílio do Tribunal de Contas do Estado" },
+        { "termo": "Função de controle", "definicao": "Caráter político-administrativo, sobre Prefeito, Vice-Prefeito, Secretários, Mesa e Vereadores" },
+        { "termo": "Função de assessoramento", "definicao": "Sugerir medidas de interesse público ao Executivo, mediante indicações" }
+      ],
+      "fonte": "Art. 3º, caput e §§ 1º a 4º",
+      "trecho": "A Câmara tem funções legislativas, exerce atribuições de fiscalização externa, financeira e orçamentária de controle e de assessoramento dos atos do Poder Executivo, bem como exerce atos de administração interna."
+    },
+    {
+      "id": "c1d5", "tipo": "lacuna", "enunciado": "Complete o §3º do Art. 3º.",
+      "texto": "A função de controle não se exerce sobre os agentes administrativos sujeitos à ação ___.",
+      "opcoes": ["hierárquica", "judicial", "partidária"], "correta": "hierárquica",
+      "fonte": "Art. 3º, §3º",
+      "trecho": "A função de controle é de caráter político-administrativo e se exerce sobre o Prefeito, Vice-Prefeito, Secretários Municipais, Mesa do Legislativo e Vereadores, mas não se exerce sobre os agentes administrativos sujeitos à ação hierárquica."
+    }
+  ]
+}
+</script>
+
+<script id="json-cap2" type="application/json">
+{
+  "id": "cap2",
+  "numero": "Título I · Capítulo II",
+  "titulo": "Da Instalação e da Posse",
+  "arts": "Arts. 4º a 11",
+  "paginas": "pp. 13 a 16",
+  "cena": "É dia de sessão solene. Há prazos, documentos e uma ordem a seguir até você tomar posse.",
+  "desafios": [
+    {
+      "id": "c2d1", "tipo": "lacuna", "enunciado": "Quando a Câmara se instala?",
+      "texto": "A Câmara Municipal instalar-se-á em sessão solene de posse no dia ___ de janeiro de cada legislatura.",
+      "opcoes": ["1º", "15", "31"], "correta": "1º",
+      "fonte": "Art. 4º",
+      "trecho": "A Câmara Municipal instalar-se-á em sessão solene de posse no dia 1º de janeiro de cada legislatura, no ano subsequente ao da eleição, independentemente de número [...]"
+    },
+    {
+      "id": "c2d2", "tipo": "lacuna", "enunciado": "Quem preside a sessão de posse?",
+      "texto": "A sessão solene de posse é presidida pelo Vereador mais ___ entre os presentes.",
+      "opcoes": ["idoso", "votado", "jovem"], "correta": "idoso",
+      "explicacao": "O mais votado só preside se a condição de mais idoso for comum a dois ou mais Vereadores.",
+      "fonte": "Art. 4º",
+      "trecho": "[...] sob a presidência do Vereador mais idoso entre os presentes ou, caso essa condição seja comum a dois ou mais Vereadores, do mais votado dentre eles na eleição municipal [...]"
+    },
+    {
+      "id": "c2d3", "tipo": "ordem", "enunciado": "Coloque o caminho até a posse na ordem certa.",
+      "passos": [
+        "Apresentar os diplomas à Diretoria Legislativa, antes da sessão solene",
+        "Apresentar a desincompatibilização e a declaração pública de bens, no ato da posse",
+        "Prestar o compromisso solene, de pé, perante o Presidente",
+        "Eleger a Mesa Diretora, sob a condução do Presidente dos trabalhos",
+        "Prefeito e Vice-Prefeito prestam o compromisso e são declarados empossados"
+      ],
+      "fonte": "Arts. 5º e 6º, I, II, IV, V e VI",
+      "trecho": "Após a eleição da Mesa Diretora, o Prefeito e o Vice-Prefeito eleitos e regularmente diplomados serão convidados a prestarem o compromisso a que se refere o inciso IV, sendo, assim, declarados devidamente empossados;"
+    },
+    {
+      "id": "c2d4", "tipo": "pareamento", "enunciado": "Ligue cada situação ao prazo ou regra.",
+      "pares": [
+        { "termo": "Posse de Vereador(a) fora da data prevista", "definicao": "Dentro de 15 dias, salvo motivo justo aceito pela Câmara" },
+        { "termo": "Posse de Prefeito e Vice-Prefeito fora da data", "definicao": "Dentro de 10 dias, salvo motivo justo aceito pela Câmara" },
+        { "termo": "Prazo máximo do uso da palavra na sessão solene", "definicao": "Dez minutos" },
+        { "termo": "Posse por videoconferência", "definicao": "Excepcional, para licença-gestante, com declaração de parto em período inferior a 120 dias" }
+      ],
+      "fonte": "Art. 6º, VII e parágrafo único; Art. 7º, I e II",
+      "trecho": "dentro do prazo de 15 (quinze) dias a contar da referida data, quando se tratar de Vereador(a), salvo motivo justo aceito pela Câmara; II - dentro do prazo de 10 (dez) dias da data fixada para a posse, quando se tratar de Prefeito e Vice-Prefeito, salvo motivo justo aceito pela Câmara;"
+    },
+    {
+      "id": "c2d5", "tipo": "lacuna", "enunciado": "E se o Vereador eleito se recusar a tomar posse?",
+      "texto": "A recusa do Vereador eleito a tomar posse importa em renúncia ___ ao mandato.",
+      "opcoes": ["tácita", "expressa", "condicionada"], "correta": "tácita",
+      "fonte": "Art. 9º",
+      "trecho": "A recusa do Vereador eleito a tomar posse importa em renúncia tácita ao mandato, devendo o Presidente da Câmara, após o decurso do prazo estipulado no art. 7º, inciso I, declarar extinto o mandato e convocar o respectivo suplente."
+    },
+    {
+      "id": "c2d6", "tipo": "lacuna", "enunciado": "Quem assume enquanto o Prefeito não toma posse?",
+      "texto": "Enquanto não ocorrer a posse do Prefeito, assumirá o cargo o ___.",
+      "opcoes": ["Vice-Prefeito", "Presidente da Câmara", "Vereador mais idoso"], "correta": "Vice-Prefeito",
+      "explicacao": "Na falta ou impedimento do Vice-Prefeito, assume o Presidente da Câmara.",
+      "fonte": "Art. 10",
+      "trecho": "Enquanto não ocorrer a posse do Prefeito, assumirá o cargo o Vice-Prefeito e, na falta ou impedimento deste, o Presidente da Câmara."
+    }
+  ]
+}
+</script>
+
+<script id="json-cap3" type="application/json">
+{
+  "id": "cap3",
+  "numero": "Título II · Capítulo I",
+  "titulo": "Da Eleição da Mesa Diretora",
+  "arts": "Arts. 12 a 21",
+  "paginas": "pp. 16 a 18",
+  "cena": "Empossados os Vereadores, chega a eleição que decide quem comanda a Casa. É a hora de buscar os votos.",
+  "desafios": [
+    {
+      "id": "c3d1", "tipo": "lacuna", "enunciado": "Quando é a eleição da primeira Mesa?",
+      "texto": "A eleição da Mesa Diretora para o primeiro biênio far-se-á logo após a posse, em 1º de janeiro do ___ ano da legislatura.",
+      "opcoes": ["primeiro", "segundo", "terceiro"], "correta": "primeiro",
+      "fonte": "Art. 12",
+      "trecho": "A eleição da Mesa Diretora da Câmara Municipal de Mossoró para o primeiro biênio far-se-á logo após a posse dos Vereadores e Vereadoras, em 1º de janeiro do primeiro ano da legislatura."
+    },
+    {
+      "id": "c3d2", "tipo": "lacuna", "enunciado": "Quanto dura o mandato da Mesa?",
+      "texto": "O mandato da Mesa Diretora será de ___ anos, sendo permitida a reeleição.",
+      "opcoes": ["um", "dois", "quatro"], "correta": "dois",
+      "fonte": "Art. 14",
+      "trecho": "O mandato da Mesa Diretora da Câmara Municipal de Mossoró será de 02 (dois) anos, sendo permitida a reeleição na mesma legislatura ou em legislaturas distintas."
+    },
+    {
+      "id": "c3d3", "tipo": "pareamento", "enunciado": "Ligue cada tema ao que o regimento diz.",
+      "pares": [
+        { "termo": "Integrantes da Mesa", "definicao": "Presidente, 1º e 2º Secretários" },
+        { "termo": "Só integram a Mesa quando em efetivo exercício", "definicao": "Dois Vice-Presidentes, Terceiro e Quarto Secretários" },
+        { "termo": "Votação da Mesa", "definicao": "Eletrônica, por maioria simples de votos" },
+        { "termo": "Presidente em exercício na eleição", "definicao": "Tem direito a voto" }
+      ],
+      "fonte": "Arts. 13, 15 e 16",
+      "trecho": "A Mesa da Câmara é composta pelo Presidente, 1º e 2º Secretários. Parágrafo único. Haverá dois Vice-Presidentes, Terceiro e Quarto Secretários, que somente serão considerados integrantes da Mesa Diretora quando em efetivo exercício."
+    },
+    {
+      "id": "c3d4", "tipo": "ordem", "enunciado": "Coloque as etapas da votação da Mesa na ordem certa.",
+      "passos": [
+        "Protocolo dos requerimentos de candidatura na Diretoria Legislativa",
+        "Chamada regimental para verificar o quórum",
+        "Votação dos requerimentos, na ordem do protocolo",
+        "Leitura, pelo Presidente, dos nomes dos votados",
+        "Proclamação do resultado final e posse imediata dos eleitos"
+      ],
+      "fonte": "Art. 17, I, III, V, VI e VII",
+      "trecho": "leitura, pelo Presidente, dos nomes dos votados para os respectivos cargos; VII - proclamação pelo Presidente do resultado final e posse imediata dos eleitos."
+    },
+    {
+      "id": "c3d5", "tipo": "lacuna", "enunciado": "Qual é o prazo para registrar a candidatura?",
+      "texto": "Os requerimentos de registro de candidatura devem ser entregues à Diretoria Legislativa, impreterivelmente, até ___ antes do horário previsto para o início da sessão.",
+      "opcoes": ["uma hora", "meia hora", "vinte e quatro horas"], "correta": "uma hora",
+      "fonte": "Art. 17, II",
+      "trecho": "os requerimentos de registro de candidatura, individualmente ou por chapa, deverão ser entregues à Diretoria Legislativa, impreterivelmente, até uma hora antes do horário previsto para o início da sessão;"
+    },
+    {
+      "id": "c3d6", "tipo": "lacuna", "enunciado": "Houve empate? Veja o desempate.",
+      "texto": "Persistindo o empate, será declarado eleito o Vereador mais ___ e, se a idade for a mesma, o mais votado na eleição municipal.",
+      "opcoes": ["idoso", "jovem", "antigo na Casa"], "correta": "idoso",
+      "explicacao": "Antes disso, o Art. 17, VIII, prevê um segundo escrutínio entre os mais votados que tiveram igual número de votos.",
+      "fonte": "Art. 17, VIII e IX",
+      "trecho": "persistindo o empate, será declarado eleito o Vereador mais idoso e, caso tenham a mesma idade, será considerado vencedor o mais votado na eleição municipal;"
+    }
+  ]
+}
+</script>
+
+<script>
+(() => {
+  'use strict';
+
+  const $ = (id) => document.getElementById(id);
+  const lerJSON = (id) => JSON.parse($(id).textContent);
+  const CFG = lerJSON('json-jogo');
+  const CAPS = CFG.capitulos.map(lerJSON);
+  const TODOS = CAPS.flatMap((c, ci) => c.desafios.map((d) => ({ ...d, cap: ci })));
+  const TOTAL = TODOS.length;
+  const MAIORIA = Math.floor(TOTAL / 2) + 1;
+  const el = { trilha: $('trilha'), urna: $('urna'), palco: $('palco') };
+  let est;
+
+  // ---------- ícones e helpers ----------
+  const ICONES = {
+    x: ['M18 6 6 18M6 6l12 12'],
+    check: ['M20 6 9 17l-5-5'],
+    arrow: ['M5 12h14M12 5l7 7-7 7'],
+    refresh: ['M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8', 'M3 3v5h5']
+  };
+  const NS = 'http://www.w3.org/2000/svg';
+  function icone(nome) {
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('class', 'ic');
+    ICONES[nome].forEach((d) => {
+      const p = document.createElementNS(NS, 'path');
+      p.setAttribute('d', d);
+      svg.append(p);
+    });
+    return svg;
+  }
+  function h(tag, attrs, ...filhos) {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v == null || v === false) continue;
+      if (k === 'class') n.className = v;
+      else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, v === true ? '' : v);
+    }
+    n.append(...filhos.flat(Infinity).filter((f) => f != null && f !== false));
+    return n;
+  }
+  function embaralhar(lista, evitarOriginal = false) {
+    const c = [...lista];
+    for (let t = 0; t < 8; t++) {
+      for (let i = c.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [c[i], c[j]] = [c[j], c[i]];
+      }
+      if (!evitarOriginal || c.some((x, i) => x !== lista[i])) break;
+    }
+    return c;
+  }
+  const treme = (b) => { b.classList.remove('treme'); void b.offsetWidth; b.classList.add('treme'); };
+  const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
+
+  // ---------- cabeçalho: trilha e urna ----------
+  const urna = {
+    resumo: h('span', null), maioria: h('span', null), enche: h('div', { class: 'enche' }),
+    tick: h('i', { class: 'tick', style: `left:${(MAIORIA / TOTAL) * 100}%` })
+  };
+  el.urna.append(
+    h('div', { class: 'urna-topo' }, urna.resumo, urna.maioria),
+    h('div', { class: 'medidor', id: 'medidor', role: 'img' }, urna.enche, urna.tick));
+
+  function desenharUrna() {
+    const v = est.votos.size;
+    urna.resumo.replaceChildren('Votos ', h('b', null, `${v} de ${TOTAL}`));
+    urna.maioria.textContent = `Maioria simples: ${MAIORIA}`;
+    urna.enche.style.width = `${(v / TOTAL) * 100}%`;
+    el.urna.classList.toggle('maioria', v >= MAIORIA);
+    $('medidor').setAttribute('aria-label', `${v} votos de ${TOTAL}. Maioria simples: ${MAIORIA}`);
+  }
+  function desenharTrilha() {
+    el.trilha.replaceChildren(...CAPS.map((c, i) => {
+      const feito = est.concluidos.has(i);
+      const atual = est.atual === i;
+      return h('li', { class: feito ? 'feito' : atual ? 'atual' : '', 'aria-current': atual ? 'step' : null },
+        h('span', { class: 'no' }, feito ? icone('check') : String(i + 1)),
+        CFG.rotulosTrilha[i] || c.titulo);
+    }));
+  }
+  function tela(...nos) {
+    el.palco.replaceChildren(...nos);
+    const alvo = el.palco.querySelector('h1, h2') || el.palco;
+    alvo.setAttribute('tabindex', '-1');
+    alvo.focus({ preventScroll: true });
+    window.scrollTo(0, 0);
+  }
+
+  // ---------- fluxo ----------
+  const novoEstado = () => ({ votos: new Set(), falhou: new Set(), concluidos: new Set(), atual: -1, rodada: 1 });
+
+  function telaInicio() {
+    est = novoEstado();
+    desenharTrilha();
+    desenharUrna();
+    tela(
+      h('section', { class: 'hero' },
+        h('h1', null, CFG.titulo),
+        h('p', null, CFG.subtitulo),
+        h('ul', { class: 'regras' }, CFG.regras.map((r) => h('li', null, r))),
+        h('button', { type: 'button', class: 'botao', onclick: () => telaCapitulo(0) }, 'Abrir a sessão', icone('arrow'))),
+      h('p', { class: 'titulo-secao' }, 'As três cadeiras do caminho'),
+      h('div', null, CAPS.map((c, i) => h('div', { class: 'item-cap' },
+        h('span', { class: 'n' }, String(i + 1)),
+        h('div', null, c.titulo, h('small', null, `${c.arts} · ${plural(c.desafios.length, 'desafio', 'desafios')}`))))));
+  }
+
+  function telaCapitulo(i) {
+    const c = CAPS[i];
+    est.atual = i;
+    desenharTrilha();
+    tela(
+      h('article', { class: 'cartao' },
+        h('div', { class: 'linha-chips' }, h('span', { class: 'chip verde' }, c.numero), h('span', { class: 'chip' }, `${c.arts} · ${c.paginas}`)),
+        h('h2', null, c.titulo),
+        h('p', { class: 'cena' }, c.cena),
+        h('p', { class: 'suave', style: 'margin-top:12px' }, `${plural(c.desafios.length, 'desafio', 'desafios')} valendo um voto cada.`)),
+      h('div', { class: 'acoes' },
+        h('button', { type: 'button', class: 'botao primario', onclick: () => jogarFila(TODOS.filter((d) => d.cap === i), () => resumoCapitulo(i)) }, 'Começar', icone('arrow'))));
+  }
+
+  function resumoCapitulo(i) {
+    est.concluidos.add(i);
+    desenharTrilha();
+    const lista = TODOS.filter((d) => d.cap === i);
+    const ganhos = lista.filter((d) => est.votos.has(d.id)).length;
+    const ultimo = i === CAPS.length - 1;
+    tela(
+      h('article', { class: 'cartao' },
+        h('p', { class: 'ref' }, CAPS[i].titulo),
+        h('h2', null, `${CFG.rotulosTrilha[i] || 'Capítulo'}: concluída`),
+        h('p', { class: 'suave' }, `Você somou ${ganhos} de ${lista.length} votos neste capítulo.`),
+        h('ul', { class: 'resumo', style: 'margin-top:10px' }, lista.map((d) => h('li', null,
+          h('span', null, d.enunciado),
+          h('span', { class: `status ${est.votos.has(d.id) ? 'bom' : 'ruim'}` }, est.votos.has(d.id) ? 'Voto' : 'Sem voto'))))),
+      h('div', { class: 'acoes' },
+        h('button', { type: 'button', class: 'botao primario', onclick: () => (ultimo ? apuracao() : telaCapitulo(i + 1)) }, ultimo ? 'Apurar os votos' : 'Próxima cadeira', icone('arrow'))));
+  }
+
+  function jogarFila(fila, aoFim) {
+    let i = 0;
+    const passo = () => {
+      if (i >= fila.length) { aoFim(); return; }
+      mostrarDesafio(fila[i], i, fila.length, () => { i += 1; passo(); });
+    };
+    passo();
+  }
+
+  function registrar(d, semErros) {
+    if (semErros) { est.votos.add(d.id); est.falhou.delete(d.id); }
+    else if (!est.votos.has(d.id)) est.falhou.add(d.id);
+    desenharUrna();
+  }
+
+  function mostrarDesafio(d, pos, n, aoTerminar) {
+    const fb = h('div', { role: 'status' });
+    const fim = (semErros) => {
+      registrar(d, semErros);
+      const bt = h('button', { type: 'button', class: 'botao primario', onclick: aoTerminar }, pos === n - 1 ? 'Concluir' : 'Continuar', icone('arrow'));
+      fb.replaceChildren(
+        h('div', { class: `voto ${semErros ? 'ok' : 'no'}` },
+          h('strong', null, semErros ? 'Voto computado' : 'Sem voto desta vez'),
+          h('span', null, semErros ? 'Você acertou de primeira.' : (est.rodada === 1 ? 'Houve erro. Esse desafio volta no segundo escrutínio.' : 'Houve erro. Ele continua pendente na apuração.'))),
+        d.explicacao && h('p', { class: 'suave', style: 'margin-top:10px' }, d.explicacao),
+        h('blockquote', { class: 'citacao' }, h('span', { class: 'fonte' }, `Texto do regimento · ${d.fonte}`), d.trecho),
+        h('div', { class: 'acoes' }, bt));
+      bt.focus({ preventScroll: true });
+    };
+    tela(h('article', { class: 'cartao' },
+      h('div', { class: 'linha-chips' },
+        h('span', { class: 'chip verde' }, est.rodada === 2 ? 'Segundo escrutínio' : CAPS[d.cap].titulo),
+        h('span', { class: 'chip' }, `Desafio ${pos + 1} de ${n}`)),
+      h('p', { class: 'enunciado' }, d.enunciado),
+      RENDER[d.tipo](d, fim),
+      fb));
+  }
+
+  function apuracao() {
+    est.atual = -1;
+    desenharTrilha();
+    const v = est.votos.size;
+    const falhas = TODOS.filter((d) => est.falhou.has(d.id));
+    const eleito = v >= MAIORIA;
+    const titulo = v === TOTAL ? CFG.titulos.unanimidade : eleito ? CFG.titulos.maioria : CFG.titulos.semMaioria;
+    const texto = eleito
+      ? 'O Presidente proclama o resultado final e a posse é imediata (Art. 17, VII).'
+      : `Faltaram ${plural(MAIORIA - v, 'voto', 'votos')} para a maioria simples. Inspirado no segundo escrutínio do Art. 17, VIII, você refaz só o que errou.`;
+    const botoes = [];
+    if (falhas.length) {
+      botoes.push(h('button', { type: 'button', class: `botao${eleito ? '' : ' primario'}`, onclick: () => { est.rodada = 2; jogarFila(falhas, apuracao); } },
+        eleito ? `Revisar ${plural(falhas.length, 'erro', 'erros')}` : `Segundo escrutínio (${falhas.length})`));
+    }
+    botoes.push(h('button', { type: 'button', class: `botao${falhas.length ? '' : ' primario'}`, onclick: telaInicio }, icone('refresh'), 'Jogar de novo'));
+    tela(
+      h('article', { class: 'cartao apuracao' },
+        h('p', { class: 'ref' }, est.rodada === 2 ? 'Apuração do segundo escrutínio' : 'Apuração'),
+        h('h2', null, titulo),
+        h('p', { class: 'suave' }, texto),
+        h('div', { class: 'numeros' },
+          h('div', { class: 'numero' }, h('span', null, 'Votos'), h('b', null, `${v} de ${TOTAL}`)),
+          h('div', { class: 'numero' }, h('span', null, 'Maioria simples'), h('b', null, String(MAIORIA)))),
+        h('ul', { class: 'resumo' }, CAPS.map((c, i) => {
+          const lista = TODOS.filter((d) => d.cap === i);
+          const g = lista.filter((d) => est.votos.has(d.id)).length;
+          return h('li', null, h('span', null, c.titulo), h('span', { class: `status ${g === lista.length ? 'bom' : g * 2 >= lista.length ? 'meio' : 'ruim'}` }, `${g} de ${lista.length}`));
+        }))),
+      h('div', { class: 'acoes' }, botoes));
+  }
+
+  // ---------- início ----------
+  $('marca-txt').textContent = CFG.titulo;
+  $('aviso-fonte').textContent = `${CFG.documento}. ${CFG.aviso}`;
+  $('btn-sair').append(icone('x'));
+  $('btn-sair').addEventListener('click', () => {
+    if (confirm('Recomeçar o jogo? O progresso desta partida será perdido.')) telaInicio();
+  });
+
+  // ---------- os três tipos de desafio ----------
+  function lacuna(d, fim) {
+    let erros = 0, feito = false;
+    const [antes, depois] = d.texto.split('___');
+    const vazio = h('span', { class: 'vazio', 'aria-label': 'lacuna' }, ' ');
+    const lista = h('div', { class: 'opcoes' });
+    embaralhar(d.opcoes).forEach((o) => {
+      const b = h('button', { type: 'button', class: 'opcao', onclick: () => {
+        if (feito || b.disabled) return;
+        if (o === d.correta) {
+          feito = true;
+          vazio.textContent = o;
+          vazio.classList.add('cheio');
+          b.classList.add('certo');
+          lista.querySelectorAll('button').forEach((x) => { x.disabled = true; });
+          fim(erros === 0);
+        } else {
+          erros += 1;
+          b.classList.add('errado');
+          b.disabled = true;
+        }
+      } }, o);
+      lista.append(b);
+    });
+    return [h('p', { class: 'frase' }, antes, vazio, depois), lista];
+  }
+
+  function ordem(d, fim) {
+    let erros = 0, prox = 0;
+    const seq = h('ol', { class: 'sequencia' });
+    const pool = h('div', { class: 'passos' });
+    embaralhar(d.passos, true).forEach((p) => {
+      const b = h('button', { type: 'button', class: 'passo', onclick: () => {
+        if (b.hidden) return;
+        if (p === d.passos[prox]) {
+          prox += 1;
+          b.hidden = true;
+          seq.append(h('li', null, p));
+          if (prox === d.passos.length) fim(erros === 0);
+        } else {
+          erros += 1;
+          treme(b);
+        }
+      } }, p);
+      pool.append(b);
+    });
+    return [h('p', { class: 'suave', style: 'margin-bottom:10px' }, 'Toque nas etapas na ordem em que acontecem.'), seq, pool];
+  }
+
+  function pareamento(d, fim) {
+    const n = d.pares.length;
+    let erros = 0, feitos = 0, sE = null, sD = null;
+    const esq = d.pares.map((p, i) => ({ i, t: p.termo }));
+    const dir = embaralhar(d.pares.map((p, i) => ({ i, t: p.definicao })), true);
+    const marcar = (lista, sel) => lista.forEach((x) => x.b.classList.toggle('sel', x === sel));
+    function avaliar() {
+      if (!sE || !sD) return;
+      const a = sE, b = sD;
+      sE = sD = null;
+      [a, b].forEach((x) => x.b.classList.remove('sel'));
+      if (a.i === b.i) {
+        [a, b].forEach((x) => { x.b.classList.add('certo'); x.b.disabled = true; });
+        feitos += 1;
+        if (feitos === n) fim(erros === 0);
+      } else {
+        erros += 1;
+        [a, b].forEach((x) => treme(x.b));
+      }
+    }
+    const criar = (x, lado) => {
+      x.b = h('button', { type: 'button', class: `par-item${lado === 'e' ? ' termo' : ''}`, onclick: () => {
+        if (x.b.disabled) return;
+        if (lado === 'e') { sE = sE === x ? null : x; marcar(esq, sE); }
+        else { sD = sD === x ? null : x; marcar(dir, sD); }
+        avaliar();
+      } }, x.t);
+      return x.b;
+    };
+    return [
+      h('p', { class: 'suave', style: 'margin-bottom:10px' }, 'Toque em um item de cada coluna para ligá-los.'),
+      h('div', { class: 'pares' },
+        h('div', { class: 'coluna' }, esq.map((x) => criar(x, 'e'))),
+        h('div', { class: 'coluna' }, dir.map((x) => criar(x, 'd'))))
+    ];
+  }
+
+  const RENDER = { lacuna, ordem, pareamento };
+
+  telaInicio();
+})();
+</script>
+</body>
+</html>
